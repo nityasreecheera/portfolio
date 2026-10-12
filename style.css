@@ -150,3 +150,11 @@
   .topbar .name { font-family: var(--display); font-size: 1.0625rem; color: var(--ink); }
   .project-page section.project { border-bottom: none; padding-top: 3rem; }
   .project-page h2 { font-size: clamp(2.25rem, 6vw, 2.75rem); }
+
+  .table-wrap { overflow-x: auto; margin: 1rem 0 1.5rem; }
+  table.compare { border-collapse: collapse; width: 100%; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+  table.compare th, table.compare td { text-align: left; padding: 0.55rem 0.75rem 0.55rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.compare th { font-weight: 500; color: var(--ink-faint); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  table.compare td { color: var(--ink-soft); }
+  table.compare td:first-child { color: var(--ink); white-space: nowrap; }
+  table.compare td.num { white-space: nowrap; }

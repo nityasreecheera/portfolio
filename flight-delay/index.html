@@ -38,7 +38,7 @@
       <p class="about-text">Delays cost US airlines around $10 billion a year, and a missed delay (a stranded passenger, a crew running out of duty hours, a knock on effect down the line) costs far more than a warning for a flight that leaves on time. So we scored models with F2, which counts recall twice as much as precision, and tuned each model's decision threshold for it. About one flight in five is delayed, so a model that never warns is right 80% of the time and useless.</p>
 
       <h3>My part</h3>
-      <p class="note">I worked on keeping the data honest and the pipeline running at scale. I audited every column for leakage, sorting out what is known before departure from what is only recorded after it, and I built the train, validation and test split by time. Through the later phases I owned the preprocessing pipeline: imputation, scaling and assembling about a hundred features into model inputs for 31.7 million flights, saved and checkpointed so the rest of the team could train on it without rebuilding it. I led the final phase, made the visuals for our final presentation and revised the final report.</p>
+      <p class="note">I worked on keeping the data honest and the pipeline running at scale. I audited every column for leakage, sorting out what is known before departure from what is only recorded after it, and I built the train, validation and test split by time. Through the later phases I owned the preprocessing pipeline: imputation, scaling and assembling about a hundred features into model inputs for 31.7 million flights, saved and checkpointed so the rest of the team could train on it without rebuilding it, and I helped with the modelling. I led the final phase, made the visuals for our final presentation and revised the final report.</p>
 
       <h3>How it works</h3>
       <ul class="points">
@@ -52,6 +52,30 @@
         <a href="../images/fd-features.jpg"><img src="../images/fd-features.jpg" width="1400" height="788" loading="lazy" alt="Slide: what drives predictions. The top 20 features by importance in the gradient boosted trees model are led by the carrier's recent delay rate, the scheduled departure time, the origin airport's delay rate and whether the origin is a hub."></a>
         <figcaption>What drives the predictions: schedule and carrier history first, then the airport network, then weather.</figcaption>
       </figure>
+
+      <h3>The models and how they differ</h3>
+      <p class="about-text">Every model was trained on the earlier years with the class imbalance handled by undersampling or class weights, had its decision threshold chosen on validation, and was then scored once on the blind 2019 test year.</p>
+      <ul class="points">
+        <li><strong>Logistic regression</strong> is the linear baseline. It needs scaled inputs, trains in about 20 minutes and is easy to explain, but it can only add up features, not combine them.</li>
+        <li><strong>Random forest</strong> averages many trees grown on random slices of the data. It handles interactions without hand built features, needs no scaling, and was the fastest to train at about 7 minutes.</li>
+        <li><strong>Gradient boosted trees</strong> build trees one after another, each fixing the last one's mistakes. They separated delayed from on time flights best (highest AUROC), but took about 7.5 hours to train with grid search.</li>
+        <li><strong>Neural networks in PySpark</strong> train across the cluster but are limited: sigmoid activations only, no dropout and one optimizer. The smallest network, one hidden layer of 64 units, beat the deeper ones, and at the default threshold it caught only 57% of delays.</li>
+        <li><strong>Neural networks in PyTorch</strong> gave full control (ReLU, dropout, Adam, batch normalization, early stopping) for architecture and dropout sweeps.</li>
+        <li><strong>A Transformer for tabular data</strong> turns each feature into a token and lets attention learn how features interact. It reached a test score competitive with the best trees, without beating them.</li>
+      </ul>
+
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Model</th><th>Threshold</th><th>Test F2</th><th>Recall</th><th>Precision</th><th>AUROC</th><th>Training</th></tr></thead>
+          <tbody>
+            <tr><td>Logistic regression</td><td class="num">0.5</td><td class="num">0.522</td><td class="num">85%</td><td class="num">20%</td><td class="num">0.661</td><td class="num">20 min</td></tr>
+            <tr><td>Random forest</td><td class="num">0.4</td><td class="num">0.523</td><td class="num">85%</td><td class="num">21%</td><td class="num">0.660</td><td class="num">7 min</td></tr>
+            <tr><td>Gradient boosted trees</td><td class="num">0.2</td><td class="num">0.527</td><td class="num">81%</td><td class="num">22%</td><td class="num">0.681</td><td class="num">7.5 h</td></tr>
+            <tr><td>PySpark MLP (64 units)</td><td class="num">0.3</td><td class="num">0.521</td><td class="num">94%</td><td class="num">19%</td><td class="num">0.651</td><td class="num">2 h</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">Scores on the blind 2019 test year, from our final report.</p>
 
       <h3>Results on the blind 2019 test year</h3>
       <dl class="numbers">
