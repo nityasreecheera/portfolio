@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deal Radar · Nitya Sree Cheera</title>
+<meta name="description" content="Deal Radar: a daily filter for startups that just filed with the SEC to raise money, judged against an investment thesis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="project-page">
+<div class="topbar">
+  <div class="wrap">
+    <a class="name" href="../">Nitya Sree Cheera</a>
+    <a href="../#projects">All projects</a>
+  </div>
+</div>
+
+<main>
+  <section class="project" id="deal-radar">
+    <div class="wrap">
+            <h2>Deal Radar</h2>
+      <p class="tagline">Every weekday it reads the companies that have just filed with the SEC to raise money, remembers which ones you've already seen, and judges the new ones against an investment thesis, often before the round is announced.</p>
+
+      <div class="actions">
+        <a class="button primary" href="https://radar.humpback-pleco.ts.net">Try it live</a>
+        <a class="button" href="https://github.com/nityasreecheera/deal-radar">View the code</a>
+      </div>
+
+      <figure>
+        <a href="../images/radar-list.jpg"><img src="../images/radar-list.jpg" width="1400" height="995" alt="Deal Radar's company list: AI infrastructure startups that fit the criteria, sorted by largest raise (Tenstorrent, Fab2, IREN, DriveNets), with filters for domain, date, country and verdict."></a>
+        <figcaption>Companies that fit a domain's criteria, largest raise first. Filters combine: domain, verdict, dates, country, state.</figcaption>
+      </figure>
+
+      <figure>
+          <a href="../images/radar-company.jpg"><img src="../images/radar-company.jpg" width="1400" height="995" loading="lazy" alt="A company page for Tenstorrent: the verdict and its reason, officers and directors from the filing, amount raised and sold, and signals for and against drawn from the filings."></a>
+          <figcaption>Each verdict comes with its reason and the filing behind it. No scores.</figcaption>
+        </figure>
+        <figure>
+          <a href="../images/radar-chart.jpg"><img src="../images/radar-chart.jpg" width="1400" height="717" loading="lazy" alt="A grouped bar chart comparing Cornelis Networks, DriveNets and Quaise Energy on amount being raised and amount sold."></a>
+          <figcaption>Charts from plain English: “Cornelis Networks vs DriveNets vs Quaise Energy”.</figcaption>
+        </figure>
+
+      <h3>What it does</h3>
+      <ul class="points">
+        <li><strong>Reads every Form D the SEC publishes,</strong> filters out funds and amendments, and looks up what each remaining company actually does.</li>
+        <li><strong>Judges each company against a domain's criteria</strong> with one of four verdicts (fits, maybe, unknown, no fit) and a one line reason.</li>
+        <li><strong>Remembers.</strong> A company you've seen never comes back, and your own verdict and note stay with it.</li>
+        <li><strong>Lets visitors try it:</strong> write your own criteria and watch them judged against companies already on the radar, or ask the analysis page for a chart.</li>
+      </ul>
+
+      <h3>Decisions worth a look in the code</h3>
+      <ul class="points">
+        <li><strong>It never invents an answer.</strong> A failed lookup or a malformed model reply is recorded as a problem and retried, never turned into a verdict.</li>
+        <li><strong>“Unknown” came from the data:</strong> twelve of the first twenty “maybes” turned out to mean “couldn't find out”, so they became their own verdict.</li>
+        <li><strong>Public to read, private by construction.</strong> A visitor's database connection reads through views that leave out private domains and the owner's notes, so no page can leak them by forgetting a filter.</li>
+        <li><strong>The model plans, the code computes.</strong> For charts, the model only picks from a closed set of plans; every number is calculated in Python from the data the viewer is allowed to see.</li>
+        <li><strong>Cost is a design constraint:</strong> free filters run before paid ones, lookups are reused across domains, and visitor features run on a cheaper model with hard limits.</li>
+      </ul>
+
+      <h3>By the numbers</h3>
+      <dl class="numbers">
+        <div><dt>23,000+</dt><dd>Form D filings archived since June 2026</dd></div>
+        <div><dt>1,800</dt><dd>companies looked at and judged</dd></div>
+        <div><dt>550+</dt><dd>tests, all running offline</dd></div>
+        <div><dt>&lt;$10</dt><dd>a month to run, server included</dd></div>
+      </dl>
+
+      <h3>Built with</h3>
+      <ul class="stack">
+        <li>Python</li><li>FastAPI</li><li>Pydantic</li><li>SQLite</li>
+        <li>Next.js</li><li>TypeScript</li><li>Tailwind</li>
+        <li>Claude via OpenRouter</li><li>Tavily</li><li>SEC EDGAR</li>
+        <li>Oracle Cloud</li><li>Tailscale</li>
+      </ul>
+
+      <h3>What went wrong</h3>
+      <p class="note">For seven weeks the search and model accounts ran out of credit. The radar kept running and its daily report said, correctly, that nothing could be examined and this was not a quiet day. Nobody was reading it. Honest failure reporting only helps if someone is watching. Because every filing had been archived, the backlog could be judged afterwards instead of lost.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><a href="../">Nitya Sree Cheera</a> · <a href="mailto:nityasree_cheera@berkeley.edu">nityasree_cheera@berkeley.edu</a> · <a href="https://github.com/nityasreecheera">GitHub</a></div>
+</footer>
+
+</body>
+</html>

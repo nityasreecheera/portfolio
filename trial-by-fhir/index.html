@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trial by FHIR · Nitya Sree Cheera</title>
+<meta name="description" content="Trial by FHIR: automated clinical trial eligibility screening with an AI decision agent. UC Berkeley MIDS capstone, Spring 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="project-page">
+<div class="topbar">
+  <div class="wrap">
+    <a class="name" href="../">Nitya Sree Cheera</a>
+    <a href="../#projects">All projects</a>
+  </div>
+</div>
+
+<main>
+  <section class="project" id="trial-by-fhir">
+    <div class="wrap">
+      <p class="label">UC Berkeley MIDS capstone, Spring 2026 · team of five</p>
+      <h2>Trial by FHIR</h2>
+      <p class="tagline">Screens patients against a clinical trial's eligibility criteria automatically, so researchers find the patients who qualify and patients hear about trials they could join, sooner.</p>
+
+      <div class="actions">
+        <a class="button primary" href="https://www.ischool.berkeley.edu/programs/mids/capstone/2026a-spring/trialbyfhir">Capstone page</a>
+        <a class="button" href="https://docs.google.com/presentation/d/1w0JlxHgctf5dnPCFJjudkQYH7-77H9ky/edit?usp=sharing&amp;ouid=104597498084558058659&amp;rtpof=true&amp;sd=true">Slides</a>
+      </div>
+
+      <figure>
+        <a href="../images/tbf-app.jpg"><img src="../images/tbf-app.jpg" width="1144" height="713" alt="Trial by FHIR's trial matching screen for a small cell lung cancer immunotherapy study: 20 patients screened, 2 ineligible, 12 for follow up, 6 eligible, with one patient shown meeting all 7 inclusion criteria and clearing all 4 exclusions."></a>
+        <figcaption>Matching results for a test trial: 20 patients screened, 6 eligible, 12 sent for follow up, 2 ineligible. All patients are synthetic.</figcaption>
+      </figure>
+
+      <h3>My part</h3>
+      <p class="note">I designed the agent system at the core of the application and led the evaluation of the decision agent. I was responsible for how the decision agent works with clinical data: how it reads a patient's record against a trial's criteria and decides whether that patient is a match.</p>
+
+      <h3>How the decision agent works</h3>
+      <ul class="points">
+        <li><strong>One criterion at a time.</strong> A trial is split into its individual inclusion and exclusion criteria, and the model judges each one against the whole patient record. Smaller models make better decisions when they answer one question at a time.</li>
+        <li><strong>Missing is not the same as no.</strong> If the record doesn't mention something a criterion needs, the agent says so instead of assuming it's absent, and the patient is flagged for follow up rather than ruled in or out.</li>
+        <li><strong>Every decision explains itself.</strong> Each criterion comes back with its reasoning and the evidence it relied on, so a coordinator can check the call instead of trusting it.</li>
+      </ul>
+
+      <figure>
+        <a href="../images/tbf-decision-agent.jpg"><img src="../images/tbf-decision-agent.jpg" width="1400" height="788" loading="lazy" alt="Slide: how the decision agent works. The full trial criteria are split into individual inclusion and exclusion specifications; each is assessed by the model against the patient record; the decision counts criteria matched, to be determined, and not matched."></a>
+        <figcaption>The decision agent, from our final presentation.</figcaption>
+      </figure>
+
+      <h3>How I evaluated it</h3>
+      <ul class="points">
+        <li><strong>A purpose built test trial</strong> with 11 inclusion and exclusion criteria, and precise SQL queries over lab values, conditions and demographics to find the patients who truly should match.</li>
+        <li><strong>Labels at two levels:</strong> for every patient, and for every criterion of every patient.</li>
+        <li><strong>A score that rewards honesty.</strong> A correct answer earns full credit, sending a patient to follow up earns half, and a confident wrong answer earns nothing. Asking a person is better than guessing.</li>
+      </ul>
+
+      <dl class="numbers">
+        <div><dt>0.903</dt><dd>criterion level weighted score</dd></div>
+        <div><dt>0.875</dt><dd>patient level weighted score</dd></div>
+        <div><dt>0%</dt><dd>of eligible patients wrongly rejected</dd></div>
+        <div><dt>1%</dt><dd>of patients wrongly marked a match</dd></div>
+      </dl>
+
+      <figure>
+        <a href="../images/tbf-evaluation.jpg"><img src="../images/tbf-evaluation.jpg" width="1400" height="788" loading="lazy" alt="Slide: evaluation results. Criterion level weighted score 0.9027 and patient level weighted score 0.8750, with confusion matrices of match, follow up and no match. Screening 100 patients takes about 3 minutes in production."></a>
+        <figcaption>Evaluation results. Screening 100 patients takes about three minutes.</figcaption>
+      </figure>
+
+      <h3>What we learned</h3>
+      <ul class="points">
+        <li><strong>Patient records are long,</strong> and most of a record is irrelevant to any one trial, so the important parts have to be filtered out before a model sees them.</li>
+        <li><strong>Models struggle with many criteria at once,</strong> which is why the agent takes them one at a time.</li>
+        <li><strong>Explainability matters.</strong> A decision without its reasons is much harder to check, so reasoning is part of every output.</li>
+      </ul>
+
+      <h3>The system around it</h3>
+      <p class="about-text">Patient records in the FHIR health data standard are loaded into PostgreSQL; the records are synthetic, generated with Synthea, so no real patient data is used. A query generated from the trial's criteria shortlists candidates, decision agents evaluate them in parallel on AWS Lambda, and AWS Step Functions runs the pipeline end to end.</p>
+
+      <h3>Built with</h3>
+      <ul class="stack">
+        <li>Python</li><li>Go</li><li>TypeScript</li><li>AWS Step Functions</li><li>AWS Lambda</li>
+        <li>Amazon Bedrock</li><li>Claude Haiku 4.5</li><li>Aurora PostgreSQL</li><li>AWS CDK</li>
+        <li>FHIR R4</li><li>Synthea</li><li>ClinicalTrials.gov</li>
+      </ul>
+
+      <p class="meta">With Aparna Shankran, Brian Corgiat, Liam Williams and Josh Pearce. The code lives in a private team repository.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><a href="../">Nitya Sree Cheera</a> · <a href="mailto:nityasree_cheera@berkeley.edu">nityasree_cheera@berkeley.edu</a> · <a href="https://github.com/nityasreecheera">GitHub</a></div>
+</footer>
+
+</body>
+</html>
