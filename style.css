@@ -60,10 +60,10 @@
     color: var(--ink-faint);
     margin: 0 0 1rem;
   }
-  .about p, .about-text { margin: 0; color: var(--ink-soft); max-width: 36rem; }
+  .about p, .about-text { margin: 0; color: var(--ink-soft); }
 
   .project h2 { font: 400 2rem/1.1 var(--display); margin: 0; }
-  .project .tagline { font: 400 1.125rem/1.5 var(--display); color: var(--ink-soft); margin: 0.75rem 0 0; max-width: 36rem; }
+  .project .tagline { font: 400 1.125rem/1.5 var(--display); color: var(--ink-soft); margin: 0.75rem 0 0; }
   .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.5rem 0 0; }
   .button {
     display: inline-block;
@@ -158,3 +158,9 @@
   table.compare td { color: var(--ink-soft); }
   table.compare td:first-child { color: var(--ink); white-space: nowrap; }
   table.compare td.num { white-space: nowrap; }
+
+  /* Justified body text on wider screens; phones keep a ragged edge to avoid wide gaps. Never auto hyphenate. */
+  .about p, .about-text, .project .tagline, ul.points li, .note, figcaption, .project .meta { hyphens: manual; text-wrap: pretty; }
+  @media (min-width: 40rem) {
+    .about p, .about-text, .project .tagline, ul.points li, .note, .project p.meta { text-align: justify; }
+  }

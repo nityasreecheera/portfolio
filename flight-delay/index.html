@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MayD(el)ay · Nitya Sree Cheera</title>
-<meta name="description" content="MayD(el)ay: predicting US flight departure delays from 31.7 million flights and NOAA weather with PySpark on Databricks. UC Berkeley MIDS, Machine Learning at Scale.">
+<meta name="description" content="MayD(el)ay: predicting which US flights will leave late, from 31.7 million flights and the weather. UC Berkeley MIDS, Machine Learning at Scale.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
@@ -23,61 +23,61 @@
     <div class="wrap">
       <p class="label">UC Berkeley MIDS, Machine Learning at Scale (W261), Spring 2026 · team of five</p>
       <h2>MayD(el)ay</h2>
-      <p class="tagline">Predicts whether a US domestic flight will leave 15 minutes late or more, using only what is known an hour before departure: the flight schedule, the airport's recent history and the latest weather.</p>
+      <p class="tagline">Predicts whether a US flight will leave at least 15 minutes late, using only what's known an hour before departure: the schedule, how the airport has been doing lately and the latest weather.</p>
 
       <div class="actions">
         <a class="button primary" href="https://github.com/nityasreecheera/flight-delay-prediction">Code and report</a>
       </div>
 
       <figure>
-        <a href="../images/fd-weather.jpg"><img src="../images/fd-weather.jpg" width="1400" height="788" alt="Slide: weather drives delay rates two to three times. The delay rate climbs from 18% with the mildest precipitation to 57% with the most severe, and from 14% to 27% as wind gets stronger."></a>
-        <figcaption>Heavy precipitation triples the delay rate, and strong wind nearly doubles it (2015 to 2019).</figcaption>
+        <a href="../images/fd-weather.jpg"><img src="../images/fd-weather.jpg" width="1400" height="788" alt="Slide: weather drives delays. The share of delayed flights climbs from 18% with the lightest rain or snow to 57% with the heaviest, and from 14% to 27% as wind gets stronger."></a>
+        <figcaption>Heavy rain or snow triples the share of delayed flights, and strong wind nearly doubles it (2015 to 2019).</figcaption>
       </figure>
 
       <h3>The problem</h3>
-      <p class="about-text">Delays cost US airlines around $10 billion a year, and a missed delay (a stranded passenger, a crew running out of duty hours, a knock on effect down the line) costs far more than a warning for a flight that leaves on time. So we scored models with F2, which counts recall twice as much as precision, and tuned each model's decision threshold for it. About one flight in five is delayed, so a model that never warns is right 80% of the time and useless.</p>
+      <p class="about-text">Delays cost US airlines around $10 billion a year. Missing a delay (a stranded passenger, a crew that runs out of working hours, a knock on effect for later flights) costs much more than a warning for a flight that turns out fine. So we scored our models with F2, a measure that cares twice as much about catching delays as about avoiding false alarms. Only about one flight in five is delayed, so a model that never warns would be right 80% of the time and still be useless.</p>
 
       <h3>My part</h3>
-      <p class="note">I worked on keeping the data honest and the pipeline running at scale. I audited every column for leakage, sorting out what is known before departure from what is only recorded after it, and I built the train, validation and test split by time. Through the later phases I owned the preprocessing pipeline: imputation, scaling and assembling about a hundred features into model inputs for 31.7 million flights, saved and checkpointed so the rest of the team could train on it without rebuilding it, and I helped with the modelling. I led the final phase, made the visuals for our final presentation and revised the final report.</p>
+      <p class="note">My job was keeping the data honest and the pipeline running at scale. I checked every column to make sure the models only saw information available before departure, not things recorded afterwards, and I split the data by time into training, validation and test sets. In the later phases I owned the step that turns raw data into model inputs: filling in missing values, scaling, and combining about a hundred features for 31.7 million flights. I saved it in a reusable form so the rest of the team could train on it without rebuilding it, and I helped with the modelling. I led the final phase, made the visuals for our final presentation and revised the final report.</p>
 
       <h3>How it works</h3>
       <ul class="points">
-        <li><strong>Flights joined to weather.</strong> Bureau of Transportation Statistics records for every domestic flight from 2015 to 2019, joined to NOAA weather from the nearest station over the three hours ending an hour before departure.</li>
-        <li><strong>No peeking at the answer.</strong> More than 25 columns that are only recorded after takeoff were dropped, scaling statistics were frozen at the last training date, and 2019 was held back as a blind test year.</li>
-        <li><strong>Eight feature families.</strong> Time of day and calendar, holidays, airport congestion, recent route and carrier delay rates, weather, airport traits and interactions between them, about a hundred inputs in all.</li>
-        <li><strong>Six model families.</strong> Logistic regression, random forest and gradient boosted trees in Spark, plus neural networks in PySpark and PyTorch and a Transformer for tabular data.</li>
+        <li><strong>Flights plus weather.</strong> Records of every US domestic flight from 2015 to 2019, matched with weather from the nearest station over the three hours ending an hour before departure.</li>
+        <li><strong>No cheating.</strong> We removed more than 25 columns that are only known after takeoff, set the scaling using training data only, and kept 2019 aside as a test year the models never saw.</li>
+        <li><strong>Eight kinds of features:</strong> time of day and calendar, holidays, how busy the airport is, how late the route and airline have been recently, weather, facts about the airport, and combinations of these. About a hundred in all.</li>
+        <li><strong>Six kinds of models,</strong> from simple to complex, described below.</li>
       </ul>
 
       <figure>
-        <a href="../images/fd-features.jpg"><img src="../images/fd-features.jpg" width="1400" height="788" loading="lazy" alt="Slide: what drives predictions. The top 20 features by importance in the gradient boosted trees model are led by the carrier's recent delay rate, the scheduled departure time, the origin airport's delay rate and whether the origin is a hub."></a>
-        <figcaption>What drives the predictions: schedule and carrier history first, then the airport network, then weather.</figcaption>
+        <a href="../images/fd-features.jpg"><img src="../images/fd-features.jpg" width="1400" height="788" loading="lazy" alt="Slide: what drives the predictions. The 20 most important features in the gradient boosted trees model are led by the airline's recent delay rate, the scheduled departure time, the airport's recent delay rate and whether the airport is a hub."></a>
+        <figcaption>What the predictions rely on most: the schedule and the airline's recent record, then the airport, then the weather.</figcaption>
       </figure>
 
       <h3>The models and how they differ</h3>
-      <p class="about-text">Every model was trained on the earlier years with the class imbalance handled by undersampling or class weights, had its decision threshold chosen on validation, and was then scored once on the blind 2019 test year.</p>
+      <p class="about-text">Every model learned from the earlier years, with extra handling because delays are rare. Its warning threshold was set using the validation data, and then it was tested once on 2019.</p>
       <ul class="points">
-        <li><strong>Logistic regression</strong> is the linear baseline. It needs scaled inputs, trains in about 20 minutes and is easy to explain, but it can only add up features, not combine them.</li>
-        <li><strong>Random forest</strong> averages many trees grown on random slices of the data. It handles interactions without hand built features, needs no scaling, and was the fastest to train at about 7 minutes.</li>
-        <li><strong>Gradient boosted trees</strong> build trees one after another, each fixing the last one's mistakes. They separated delayed from on time flights best (highest AUROC), but took about 7.5 hours to train with grid search.</li>
-        <li><strong>Neural networks in PySpark</strong> train across the cluster but are limited: sigmoid activations only, no dropout and one optimizer. The smallest network, one hidden layer of 64 units, beat the deeper ones, and at the default threshold it caught only 57% of delays.</li>
-        <li><strong>Neural networks in PyTorch</strong> gave full control (ReLU, dropout, Adam, batch normalization, early stopping) for architecture and dropout sweeps.</li>
-        <li><strong>A Transformer for tabular data</strong> turns each feature into a token and lets attention learn how features interact. It reached a test score competitive with the best trees, without beating them.</li>
+        <li><strong>Logistic regression</strong> is the simple starting point. It's quick to train (about 20 minutes) and easy to explain, but it looks at each feature on its own and can't spot combinations.</li>
+        <li><strong>Random forest</strong> averages the votes of many decision trees, each trained on a random part of the data. It picks up combinations on its own and was the fastest to train, at about 7 minutes.</li>
+        <li><strong>Gradient boosted trees</strong> build trees one at a time, each fixing the mistakes of the ones before. They were best at telling delayed flights from on time ones, but took about 7.5 hours to train and tune.</li>
+        <li><strong>Neural networks in PySpark</strong> can train across many machines but have few settings to adjust. The smallest network beat the bigger ones, but with default settings it caught only 57% of delays.</li>
+        <li><strong>Neural networks in PyTorch</strong> gave us full control over how the network is built and trained, which we used to test different sizes and settings.</li>
+        <li><strong>A Transformer,</strong> the kind of model behind modern AI chatbots, adapted for tables of data. It scored about as well as the best trees but didn't beat them.</li>
       </ul>
 
       <div class="table-wrap">
         <table class="compare">
-          <thead><tr><th>Model</th><th>Threshold</th><th>Test F2</th><th>Recall</th><th>Precision</th><th>AUROC</th><th>Training</th></tr></thead>
+          <thead><tr><th>Model</th><th>Threshold</th><th>F2</th><th>Recall</th><th>Precision</th><th>AUROC</th><th>Training</th></tr></thead>
           <tbody>
             <tr><td>Logistic regression</td><td class="num">0.5</td><td class="num">0.522</td><td class="num">85%</td><td class="num">20%</td><td class="num">0.661</td><td class="num">20 min</td></tr>
             <tr><td>Random forest</td><td class="num">0.4</td><td class="num">0.523</td><td class="num">85%</td><td class="num">21%</td><td class="num">0.660</td><td class="num">7 min</td></tr>
             <tr><td>Gradient boosted trees</td><td class="num">0.2</td><td class="num">0.527</td><td class="num">81%</td><td class="num">22%</td><td class="num">0.681</td><td class="num">7.5 h</td></tr>
-            <tr><td>PySpark MLP (64 units)</td><td class="num">0.3</td><td class="num">0.521</td><td class="num">94%</td><td class="num">19%</td><td class="num">0.651</td><td class="num">2 h</td></tr>
+            <tr><td>PySpark neural network</td><td class="num">0.3</td><td class="num">0.521</td><td class="num">94%</td><td class="num">19%</td><td class="num">0.651</td><td class="num">2 h</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="meta">Scores on the blind 2019 test year, from our final report.</p>
+      <p class="meta">Scores on the 2019 test year, from our final report. Threshold: how sure a model must be before it warns. F2: the main score, higher is better. Recall: the share of delays it caught. Precision: the share of its warnings that were real delays. AUROC: how well it separates delayed flights from on time ones.</p>
 
-      <h3>Results on the blind 2019 test year</h3>
+      <h3>Results on the 2019 test year</h3>
       <dl class="numbers">
         <div><dt>31.7M</dt><dd>flights, 2015 to 2019</dd></div>
         <div><dt>0.527</dt><dd>F2, gradient boosted trees</dd></div>
@@ -87,15 +87,15 @@
 
       <h3>What we learned</h3>
       <ul class="points">
-        <li><strong>Threshold tuning mattered more than the model.</strong> At the default threshold of 0.5 the models miss about two thirds of delays. Once thresholds were tuned, logistic regression, random forest and boosted trees all landed within 0.005 of each other on the test year.</li>
-        <li><strong>Trees beat neural networks on tabular data.</strong> The neural networks reached the same range only after tuning, at a much higher training cost.</li>
-        <li><strong>One simple flag says a lot.</strong> When the plane's previous flight left late, the delay rate rises from 17% to 28%.</li>
-        <li><strong>There is a ceiling.</strong> Mechanical problems, crew shortages and air traffic control delays don't show up in schedules or weather, so catching most delays means about four false alarms for every real one.</li>
+        <li><strong>The warning threshold mattered more than the model.</strong> With default settings the models missed about two thirds of delays. Once the threshold was tuned, logistic regression, random forest and boosted trees scored almost the same.</li>
+        <li><strong>Trees beat neural networks on this kind of data.</strong> The neural networks only caught up after tuning, and took much longer to train.</li>
+        <li><strong>One simple fact says a lot.</strong> If the plane's previous flight left late, the chance of a delay goes from 17% to 28%.</li>
+        <li><strong>There's a limit.</strong> Mechanical problems, crew shortages and air traffic control don't show up in schedules or weather, so catching most delays means about four false alarms for every real one.</li>
       </ul>
 
       <figure>
-        <a href="../images/fd-pipelines.jpg"><img src="../images/fd-pipelines.jpg" width="1400" height="788" loading="lazy" alt="Slide: three pipelines, six models. Raw flights and weather are joined, cleaned, feature engineered and split by time, then fed through a scaled pipeline for logistic regression and random forest, an assembler pipeline for gradient boosted trees, and a third pipeline for the neural networks, each followed by threshold tuning and a blind test."></a>
-        <figcaption>From raw data to six models through three pipelines.</figcaption>
+        <a href="../images/fd-pipelines.jpg"><img src="../images/fd-pipelines.jpg" width="1400" height="788" loading="lazy" alt="Slide: three pipelines, six models. Flights and weather are joined, cleaned, turned into features and split by time, then fed through three pipelines for the different models, each followed by threshold tuning and a final test."></a>
+        <figcaption>How raw data becomes six models, through three pipelines.</figcaption>
       </figure>
 
       <h3>Built with</h3>
