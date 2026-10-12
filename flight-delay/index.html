@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MayD(el)ay · Nitya Sree Cheera</title>
+<meta name="description" content="MayD(el)ay: predicting US flight departure delays from 31.7 million flights and NOAA weather with PySpark on Databricks. UC Berkeley MIDS, Machine Learning at Scale.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="project-page">
+<div class="topbar">
+  <div class="wrap">
+    <a class="name" href="../">Nitya Sree Cheera</a>
+    <a href="../#projects">All projects</a>
+  </div>
+</div>
+
+<main>
+  <section class="project" id="flight-delay">
+    <div class="wrap">
+      <p class="label">UC Berkeley MIDS, Machine Learning at Scale (W261), Spring 2026 · team of five</p>
+      <h2>MayD(el)ay</h2>
+      <p class="tagline">Predicts whether a US domestic flight will leave 15 minutes late or more, using only what is known an hour before departure: the flight schedule, the airport's recent history and the latest weather.</p>
+
+      <div class="actions">
+        <a class="button primary" href="https://github.com/nityasreecheera/flight-delay-prediction">Code and report</a>
+      </div>
+
+      <figure>
+        <a href="../images/fd-weather.jpg"><img src="../images/fd-weather.jpg" width="1400" height="788" alt="Slide: weather drives delay rates two to three times. The delay rate climbs from 18% with the mildest precipitation to 57% with the most severe, and from 14% to 27% as wind gets stronger."></a>
+        <figcaption>Heavy precipitation triples the delay rate, and strong wind nearly doubles it (2015 to 2019).</figcaption>
+      </figure>
+
+      <h3>The problem</h3>
+      <p class="about-text">Delays cost US airlines around $10 billion a year, and a missed delay (a stranded passenger, a crew running out of duty hours, a knock on effect down the line) costs far more than a warning for a flight that leaves on time. So we scored models with F2, which counts recall twice as much as precision, and tuned each model's decision threshold for it. About one flight in five is delayed, so a model that never warns is right 80% of the time and useless.</p>
+
+      <h3>My part</h3>
+      <p class="note">I worked on keeping the data honest and the pipeline running at scale. I audited every column for leakage, sorting out what is known before departure from what is only recorded after it, and I built the train, validation and test split by time. Through the later phases I owned the preprocessing pipeline: imputation, scaling and assembling about a hundred features into model inputs for 31.7 million flights, saved and checkpointed so the rest of the team could train on it without rebuilding it. I led the final phase, made the visuals for our final presentation and revised the final report.</p>
+
+      <h3>How it works</h3>
+      <ul class="points">
+        <li><strong>Flights joined to weather.</strong> Bureau of Transportation Statistics records for every domestic flight from 2015 to 2019, joined to NOAA weather from the nearest station over the three hours ending an hour before departure.</li>
+        <li><strong>No peeking at the answer.</strong> More than 25 columns that are only recorded after takeoff were dropped, scaling statistics were frozen at the last training date, and 2019 was held back as a blind test year.</li>
+        <li><strong>Eight feature families.</strong> Time of day and calendar, holidays, airport congestion, recent route and carrier delay rates, weather, airport traits and interactions between them, about a hundred inputs in all.</li>
+        <li><strong>Six model families.</strong> Logistic regression, random forest and gradient boosted trees in Spark, plus neural networks in PySpark and PyTorch and a Transformer for tabular data.</li>
+      </ul>
+
+      <figure>
+        <a href="../images/fd-features.jpg"><img src="../images/fd-features.jpg" width="1400" height="788" loading="lazy" alt="Slide: what drives predictions. The top 20 features by importance in the gradient boosted trees model are led by the carrier's recent delay rate, the scheduled departure time, the origin airport's delay rate and whether the origin is a hub."></a>
+        <figcaption>What drives the predictions: schedule and carrier history first, then the airport network, then weather.</figcaption>
+      </figure>
+
+      <h3>Results on the blind 2019 test year</h3>
+      <dl class="numbers">
+        <div><dt>31.7M</dt><dd>flights, 2015 to 2019</dd></div>
+        <div><dt>0.527</dt><dd>F2, gradient boosted trees</dd></div>
+        <div><dt>81%</dt><dd>of delayed flights caught</dd></div>
+        <div><dt>0.68</dt><dd>AUROC</dd></div>
+      </dl>
+
+      <h3>What we learned</h3>
+      <ul class="points">
+        <li><strong>Threshold tuning mattered more than the model.</strong> At the default threshold of 0.5 the models miss about two thirds of delays. Once thresholds were tuned, logistic regression, random forest and boosted trees all landed within 0.005 of each other on the test year.</li>
+        <li><strong>Trees beat neural networks on tabular data.</strong> The neural networks reached the same range only after tuning, at a much higher training cost.</li>
+        <li><strong>One simple flag says a lot.</strong> When the plane's previous flight left late, the delay rate rises from 17% to 28%.</li>
+        <li><strong>There is a ceiling.</strong> Mechanical problems, crew shortages and air traffic control delays don't show up in schedules or weather, so catching most delays means about four false alarms for every real one.</li>
+      </ul>
+
+      <figure>
+        <a href="../images/fd-pipelines.jpg"><img src="../images/fd-pipelines.jpg" width="1400" height="788" loading="lazy" alt="Slide: three pipelines, six models. Raw flights and weather are joined, cleaned, feature engineered and split by time, then fed through a scaled pipeline for logistic regression and random forest, an assembler pipeline for gradient boosted trees, and a third pipeline for the neural networks, each followed by threshold tuning and a blind test."></a>
+        <figcaption>From raw data to six models through three pipelines.</figcaption>
+      </figure>
+
+      <h3>Built with</h3>
+      <ul class="stack">
+        <li>PySpark</li><li>Spark MLlib</li><li>Databricks</li><li>PyTorch</li><li>Python</li>
+        <li>BTS flight data</li><li>NOAA weather data</li>
+      </ul>
+
+      <p class="meta">With Anne Hsu, Colton Hester, Kenzie Nguyen and Sai Sriya Mudigonda.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><a href="../">Nitya Sree Cheera</a> · <a href="mailto:nityasree_cheera@berkeley.edu">nityasree_cheera@berkeley.edu</a> · <a href="https://github.com/nityasreecheera">GitHub</a></div>
+</footer>
+
+</body>
+</html>
