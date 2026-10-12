@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linear A · Nitya Sree Cheera</title>
+<meta name="description" content="Linear A: why computer studies of an undeciphered Minoan script keep finding false language families, and the safeguards that fix it. Independent research by Nitya Sree Cheera.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="project-page">
+<div class="topbar">
+  <div class="wrap">
+    <a class="name" href="../">Nitya Sree Cheera</a>
+    <a href="../#projects">All projects</a>
+  </div>
+</div>
+
+<main>
+  <section class="project" id="linear-a">
+    <div class="wrap">
+      <p class="label">Independent research · June 2026</p>
+      <h2>Linear A</h2>
+      <p class="tagline">Linear A is a 3,500 year old script from Minoan Crete that nobody can read. Computer studies keep naming its language family with confidence, and keep contradicting each other. I showed why, and that the honest answer, for now, is that we can't tell.</p>
+
+      <figure>
+        <a href="../images/la-distances.png"><img src="../images/la-distances.png" width="1131" height="553" alt="Bar chart of attribution distance from Linear A to eight languages, with error bars. Every language is a poor fit: all distances are above 2.7, where 1.0 would mean identical. The two Semitic languages land at opposite ends, Akkadian nearest and Ugaritic farthest."></a>
+        <figcaption>How far Linear A is from each language (1.0 would mean identical). Every language is a poor fit, and the two Semitic languages land at opposite ends.</figcaption>
+      </figure>
+
+      <h3>The puzzle</h3>
+      <p class="about-text">Linear B, a later script that shares many of Linear A's signs, was deciphered in 1952 as early Greek. Borrowing its sound values, we can read Linear A aloud, but the words belong to no known language. Computational studies have linked it to Semitic, to Anatolian, and in one paper to five unrelated families at once. When answers are that scattered, the method is the problem, not just the data.</p>
+
+      <h3>Three ways a tiny corpus can fool you</h3>
+      <ul class="points">
+        <li><strong>Different scripts.</strong> The same word looks unrelated when written two ways: Greek <em>khrusós</em> (gold) is <em>ku ru so</em> in Linear B. My safeguard converts every language into the same simple syllable spelling first.</li>
+        <li><strong>Unequal amounts of text.</strong> A model trained on lots of text is a strict judge and one trained on little is a lenient one, so their scores aren't comparable. I used size controlled scores with error bars.</li>
+        <li><strong>Borrowed sounds.</strong> Reading Linear A with Linear B's sounds may plant a resemblance to Greek. I measured that bias for the first time by reshuffling the sounds 300 times.</li>
+      </ul>
+
+      <h3>What I found</h3>
+      <ul class="points">
+        <li><strong>The method passes a known test.</strong> It correctly recognises Linear B and the Greek alphabet as the same language (a surprise ratio of just 1.14).</li>
+        <li><strong>Linear A is not Greek.</strong> It resembles Linear B's script but not the Greek language. A real Greek dialect would match both.</li>
+        <li><strong>The borrowed sound bias is real.</strong> The actual sound values make Linear A look more Greek than about 98% of random reshuffles, and the main result survives it.</li>
+        <li><strong>A fake answer, taken apart.</strong> Without the safeguards, comparing against ten languages produces a confident "90% Semitic" verdict that three diagnostics expose as an artifact.</li>
+        <li><strong>Five different methods agree.</strong> Word shape typology, Bayesian odds with a "none of these" option, trade word borrowing, sister script triangulation and sign genealogy all return the same verdict: undetermined.</li>
+      </ul>
+
+      <figure>
+        <a href="../images/la-shuffle.png"><img src="../images/la-shuffle.png" width="1353" height="506" loading="lazy" alt="Two histograms of Linear A's surprise score against Greek and against Linear B over 300 random reshuffles of its sign sounds. The real sound values, marked in red, sit far in the more similar tail of both."></a>
+        <figcaption>The borrowed sound test: the real sound values (red) beat about 98% of random reshuffles, so reading Linear A through Linear B pulls it toward Greek.</figcaption>
+      </figure>
+
+      <h3>The takeaway</h3>
+      <p class="note">I'm not decoding Linear A. The contribution is a checklist for anyone attempting it, or any other unread script: test the method on a known answer, put every language in the same spelling, use fair size controlled scores with error bars, and measure the borrowed sound bias. With those in place, a confident answer has to earn it.</p>
+
+      <h3>Built with</h3>
+      <ul class="stack">
+        <li>Python</li><li>NumPy</li><li>n gram language models</li><li>Bootstrap error bars</li><li>Permutation tests</li>
+        <li>Universal Dependencies treebanks</li><li>WALS</li><li>LaTeX</li>
+      </ul>
+
+      <p class="meta">Data: the Linear A corpus from lineara.xyz, a Linear B lexicon, Greek, Ugaritic and six Universal Dependencies languages (Hittite, Akkadian, Latin, Gothic, Vedic Sanskrit, Ancient Greek).</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><a href="../">Nitya Sree Cheera</a> · <a href="mailto:nityasree_cheera@berkeley.edu">nityasree_cheera@berkeley.edu</a> · <a href="https://github.com/nityasreecheera">GitHub</a></div>
+</footer>
+
+</body>
+</html>
