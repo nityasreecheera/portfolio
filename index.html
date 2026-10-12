@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nitya Sree Cheera</title>
-<meta name="description" content="Nitya Sree Cheera: data science, UC Berkeley School of Information. Projects, including Deal Radar.">
+<meta name="description" content="Nitya Sree Cheera: data science, UC Berkeley School of Information. Projects: Deal Radar and Trial by FHIR.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
@@ -214,6 +214,46 @@
 
       <h3>What went wrong</h3>
       <p class="note">For seven weeks the search and model accounts ran out of credit. The radar kept running and its daily report said, correctly, that nothing could be examined and this was not a quiet day. Nobody was reading it. Honest failure reporting only helps if someone is watching. Because every filing had been archived, the backlog could be judged afterwards instead of lost.</p>
+    </div>
+  </section>
+
+  <section class="project" id="trial-by-fhir">
+    <div class="wrap">
+      <p class="label">Project · UC Berkeley MIDS capstone, Spring 2026 · team of five</p>
+      <h2>Trial by FHIR</h2>
+      <p class="tagline">Screens patients against a clinical trial's eligibility criteria automatically, so coordinators spend less time combing through health records and eligible patients hear about trials sooner.</p>
+
+      <div class="actions">
+        <a class="button primary" href="https://www.ischool.berkeley.edu/programs/mids/capstone/2026a-spring/trialbyfhir">Capstone page</a>
+        <a class="button" href="https://docs.google.com/presentation/d/1w0JlxHgctf5dnPCFJjudkQYH7-77H9ky/edit?usp=sharing&amp;ouid=104597498084558058659&amp;rtpof=true&amp;sd=true">Slides</a>
+      </div>
+
+      <h3>Results</h3>
+      <dl class="numbers">
+        <div><dt>0.875</dt><dd>patient level weighted score</dd></div>
+        <div><dt>0.903</dt><dd>criterion level weighted score</dd></div>
+        <div><dt>~3 min</dt><dd>to screen 100 patients</dd></div>
+      </dl>
+
+      <h3>How it works</h3>
+      <ul class="points">
+        <li><strong>Patient records become FHIR,</strong> the healthcare data standard, and are loaded into PostgreSQL tables. The records are synthetic, generated with Synthea; no real patient data is used.</li>
+        <li><strong>Trials come from ClinicalTrials.gov.</strong> An LLM turns each inclusion and exclusion criterion into a database query, which shortlists the patients worth a closer look.</li>
+        <li><strong>A decision agent reads each shortlisted patient's record</strong> against the full criteria and returns eligible, not eligible or uncertain, with its reasoning for every criterion.</li>
+        <li><strong>AWS Step Functions runs it end to end,</strong> evaluating up to ten patients at a time.</li>
+      </ul>
+
+      <h3>My part</h3>
+      <p class="note">I built the first version of the decision agent. Its rule is that absence of evidence is not evidence of absence: a criterion the record doesn't mention is marked missing, never assumed false, and any missing exclusion makes the answer uncertain rather than eligible. Every check quotes the exact evidence from the record, or says it wasn't found. The team later built it out into the production matching service.</p>
+
+      <h3>Built with</h3>
+      <ul class="stack">
+        <li>Python</li><li>Go</li><li>TypeScript</li><li>AWS Step Functions</li><li>AWS Lambda</li>
+        <li>Amazon Bedrock</li><li>Claude Haiku 4.5</li><li>Aurora PostgreSQL</li><li>AWS CDK</li>
+        <li>FHIR R4</li><li>Synthea</li><li>ClinicalTrials.gov</li>
+      </ul>
+
+      <p class="meta">The code lives in a private team repository.</p>
     </div>
   </section>
 </main>
