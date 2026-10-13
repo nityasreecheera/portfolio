@@ -27,6 +27,7 @@
 
       <div class="actions">
         <a class="button primary" href="https://github.com/nityasreecheera/flight-delay-prediction">Code and report</a>
+        <a class="button" href="#lessons">Lessons learned</a>
       </div>
 
       <figure>
@@ -85,7 +86,7 @@
         <div><dt>0.68</dt><dd>AUROC</dd></div>
       </dl>
 
-      <h3>Lessons learned</h3>
+      <h3 id="lessons">Lessons learned</h3>
 
       <h4>A yes or no question</h4>
       <p class="about-text">This is a classification problem: for each flight the model answers one yes or no question, “will it leave 15 minutes late or more?” It doesn't try to guess how many minutes late. Under the hood it gives a probability, and a threshold turns that into a yes or no. A low threshold warns more often, catching more delays but raising more false alarms.</p>
