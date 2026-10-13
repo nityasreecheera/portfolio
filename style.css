@@ -159,11 +159,8 @@
   table.compare td:first-child { color: var(--ink); white-space: nowrap; }
   table.compare td.num { white-space: nowrap; }
 
-  /* Justified body text on wider screens; phones keep a ragged edge to avoid wide gaps. Never auto hyphenate. */
+  /* Left aligned body text with balanced line breaks; never auto hyphenate. */
   .about p, .about-text, .project .tagline, ul.points li, .note, figcaption, .project .meta { hyphens: manual; text-wrap: pretty; }
-  @media (min-width: 40rem) {
-    .about p, .about-text, .project .tagline, ul.points li, .note, .project p.meta { text-align: justify; }
-  }
 
   h4 { font: 500 0.9375rem/1.4 var(--body); margin: 2rem 0 0.5rem; color: var(--accent); }
   h4 + .about-text + .points { margin-top: 0.75rem; }
