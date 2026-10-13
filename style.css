@@ -164,3 +164,6 @@
   @media (min-width: 40rem) {
     .about p, .about-text, .project .tagline, ul.points li, .note, .project p.meta { text-align: justify; }
   }
+
+  h4 { font: 500 0.9375rem/1.4 var(--body); margin: 2rem 0 0.5rem; color: var(--accent); }
+  h4 + .about-text + .points { margin-top: 0.75rem; }
