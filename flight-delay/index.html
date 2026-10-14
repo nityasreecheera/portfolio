@@ -42,6 +42,31 @@
       <p class="note">My job was keeping the data honest and the pipeline running at scale. I checked every column to make sure the models only saw information available before departure, not things recorded afterwards, and I split the data by time into training, validation and test sets. In the later phases I owned the step that turns raw data into model inputs: filling in missing values, scaling, and combining about a hundred features for 31.7 million flights. I saved it in a reusable form so the rest of the team could train on it without rebuilding it, and I helped with the modelling. I led the final phase, made the visuals for our final presentation and revised the final report.</p>
 
       <h3>How it works</h3>
+      <figure class="flow" aria-label="Architecture diagram of the project, from raw data to the final test.">
+        <div class="flow-row sources">
+          <div class="box"><b>Flight records</b><span>Bureau of Transportation Statistics, 31.7M flights, 2015 to 2019</span></div>
+          <div class="box"><b>Weather</b><span>NOAA hourly readings from stations near each airport</span></div>
+        </div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="box"><b>Join</b><span>Each flight gets the weather from its nearest station, averaged over the 3 hours ending 1 hour before departure</span></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="box mine"><b>Split by time</b><span>60% training, 20% validation, 20% test (2019), so no model learns from the future</span></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="box mine"><b>Clean and fill</b><span>Drop 25+ columns recorded after takeoff and flights with no answer; fill missing values using training data only</span></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="box"><b>Build features</b><span>About 100 features in 8 families: time, holidays, congestion, delay rates, weather, airport facts, combinations, indices</span></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="flow-row three">
+          <div class="box mine"><b>Pipeline A: scaled</b><span>Logistic regression, random forest</span></div>
+          <div class="box mine"><b>Pipeline B: original values</b><span>Gradient boosted trees</span></div>
+          <div class="box"><b>Pipeline C: scaled, fewer on time flights</b><span>Neural networks in PySpark and PyTorch, Transformer</span></div>
+        </div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="box"><b>Tune the warning threshold</b><span>On validation data, to get the best F2 score</span></div>
+        <div class="arrow" aria-hidden="true"></div>
+        <div class="box end"><b>One final test on 2019</b><span>Every setting frozen; the test year is used once</span></div>
+        <figcaption><span class="key" aria-hidden="true"></span> Green outlined steps were my part. The data processing runs on Spark in Databricks.</figcaption>
+      </figure>
       <ul class="points">
         <li><strong>Flights plus weather.</strong> Records of every US domestic flight from 2015 to 2019, matched with weather from the nearest station over the three hours ending an hour before departure.</li>
         <li><strong>No cheating.</strong> We removed more than 25 columns that are only known after takeoff, set the scaling using training data only, and kept 2019 aside as a test year the models never saw.</li>

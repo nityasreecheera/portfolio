@@ -167,3 +167,31 @@
 
   html { scroll-behavior: smooth; }
   h3[id] { scroll-margin-top: 1.5rem; }
+
+  /* Architecture diagram on project pages. */
+  .flow { margin: 1rem 0 1.5rem; display: flex; flex-direction: column; align-items: stretch; }
+  .flow .box {
+    background: var(--raised);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+  .flow .box b { display: block; font-weight: 500; color: var(--ink); }
+  .flow .box span { display: block; color: var(--ink-faint); font-size: 0.8125rem; }
+  .flow .box.mine { border: 1.5px solid var(--accent); }
+  .flow .box.end { background: var(--ink); border-color: var(--ink); }
+  .flow .box.end b { color: var(--paper); }
+  .flow .box.end span { color: var(--rule); }
+  .flow-row { display: grid; gap: 0.6rem; }
+  .flow-row.sources { grid-template-columns: 1fr 1fr; }
+  .flow-row.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 40rem) { .flow-row.sources, .flow-row.three { grid-template-columns: 1fr; } }
+  .flow .arrow { align-self: center; width: 1px; height: 1.1rem; background: var(--ink-faint); position: relative; margin-bottom: 5px; }
+  .flow .arrow::after {
+    content: ""; position: absolute; left: -4px; bottom: -5px;
+    border-left: 4.5px solid transparent; border-right: 4.5px solid transparent; border-top: 6px solid var(--ink-faint);
+  }
+  .flow figcaption { margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+  .flow .key { display: inline-block; width: 0.9rem; height: 0.6rem; border: 1.5px solid var(--accent); border-radius: 2px; flex: none; }
