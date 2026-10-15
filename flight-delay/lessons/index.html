@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MayD(el)ay lessons learned · Nitya Sree Cheera</title>
+<meta name="description" content="Lessons learned from MayD(el)ay, a flight delay prediction project: the tradeoffs we weighed, how we prevented leakage and overfitting, and how we tuned the models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body class="project-page">
+<div class="topbar">
+  <div class="wrap">
+    <a class="name" href="../../">Nitya Sree Cheera</a>
+    <a href="../">Back to MayD(el)ay</a>
+  </div>
+</div>
+
+<main>
+  <section class="project" id="lessons">
+    <div class="wrap">
+      <p class="label">MayD(el)ay · flight delay prediction</p>
+      <h2>Lessons learned</h2>
+      <p class="tagline">What we chose, what we gave up, and what would have gone wrong otherwise, from a project predicting delays for 31.7 million US flights.</p>
+
+      <nav class="toc" aria-label="On this page">
+        <p class="label">On this page</p>
+        <ol>
+          <li><a href="#classification">A yes or no question</a></li>
+          <li><a href="#metric">Why F2 and recall</a></li>
+          <li><a href="#leakage">Data leakage</a></li>
+          <li><a href="#tradeoffs">Tradeoffs we weighed</a></li>
+          <li><a href="#overfitting">Preventing overfitting</a></li>
+          <li><a href="#tuning">Tuning the settings</a></li>
+          <li><a href="#models">Why these models</a></li>
+          <li><a href="#scaling">Scaling</a></li>
+          <li><a href="#missing">Missing values</a></li>
+          <li><a href="#ablation">Ablation study</a></li>
+          <li><a href="#takeaways">Big takeaways</a></li>
+        </ol>
+      </nav>
+
+      <h3 id="classification">A yes or no question</h3>
+      <p class="about-text">This is a classification problem: for each flight the model answers one yes or no question, “will it leave 15 minutes late or more?” It doesn't guess how many minutes. Under the hood it gives a probability, and a threshold turns that into a yes or no.</p>
+
+      <h3 id="metric">Why F2 and recall, not accuracy or F1</h3>
+      <ul class="points">
+        <li><strong>Accuracy is misleading here.</strong> Only about one flight in five is delayed, so a model that always says “on time” is 80% accurate and catches nothing.</li>
+        <li><strong>Recall is the share of real delays the model catches.</strong> Precision is the share of its warnings that turn out to be real delays.</li>
+        <li><strong>F1 treats both as equally important,</strong> but they aren't. A missed delay strands passengers and crews, while a false alarm mostly means someone checks on a flight that turns out fine. Tuned for F1, the models would warn less and miss more delays.</li>
+        <li><strong>F2 counts recall twice as much as precision,</strong> which matches that difference in cost. So we tuned every model for F2, accepting more false alarms to catch more delays.</li>
+      </ul>
+      <p class="about-text">The threshold is where this tradeoff becomes concrete. For our PySpark neural network on validation data:</p>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Threshold</th><th>Delays caught</th><th>Warnings that were real</th><th>F2</th></tr></thead>
+          <tbody>
+            <tr><td>0.10</td><td class="num">99.8%</td><td class="num">16%</td><td class="num">0.489</td></tr>
+            <tr><td>0.30 (chosen)</td><td class="num">86%</td><td class="num">20%</td><td class="num">0.513</td></tr>
+            <tr><td>0.50 (default)</td><td class="num">57%</td><td class="num">25%</td><td class="num">0.455</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="leakage">Data leakage, and how we prevented it</h3>
+      <p class="about-text">Data leakage is when a model gets to see information it wouldn't have at the moment it makes a prediction. The obvious case is the actual departure delay itself: give a model that column and it will look perfect, because it's reading the answer. Leakage makes a model look great on paper and fail in real use. We guarded against it at every step:</p>
+      <ul class="points">
+        <li><strong>Removed every column recorded after departure,</strong> more than 25 of them, such as actual departure time, takeoff time and taxi time.</li>
+        <li><strong>Split the data by time, not at random.</strong> The model trains on earlier dates and is tested on later ones, so it never learns from the future.</li>
+        <li><strong>Learned every statistic from the training data only.</strong> Averages, delay rates, busy airport thresholds and scaling values were all computed on training data, then frozen and reused for validation and test.</li>
+        <li><strong>Used weather only up to an hour before departure,</strong> the latest moment a real prediction could be made.</li>
+        <li><strong>Touched the 2019 test year only once,</strong> at the very end, after all settings and thresholds had been chosen on validation data.</li>
+      </ul>
+
+
+      <h3 id="tradeoffs">Tradeoffs we weighed</h3>
+      <p class="about-text">Most decisions in this project were a choice between two reasonable options. Here's what we picked and what would likely have happened otherwise. Where we actually ran both options, the card is marked <em>measured</em>; the others are explained from how the methods behave.</p>
+      <div class="tradeoffs">
+        <div class="tradeoff">
+          <h4>Random split or split by time?</h4>
+          <dl>
+            <dt>What we did</dt><dd>Split by date: the models train on earlier days, are tuned on later ones, and are tested on 2019.</dd>
+            <dt>If we hadn't</dt><dd>A random split would put flights from the same stormy afternoon in both training and test. The model would partly remember the answer, scores would look better than they really are, and it would disappoint the first time it saw a truly new day.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>Mean or median for missing weather readings?</h4>
+          <dl>
+            <dt>What we did</dt><dd>The median of the previous seven days of training data.</dd>
+            <dt>If we hadn't</dt><dd>Weather is lopsided: most hours have no rain and a few have a lot. A mean gets dragged up by those few storms, so every gap would be filled with weather that's wetter and windier than a normal hour. The model would learn that “missing” looks a bit like “stormy” and raise false alarms on calm days with a broken sensor. A median stays at a typical value.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>Standard deviation or median absolute deviation for scaling weather?</h4>
+          <dl>
+            <dt>What we did</dt><dd>Each reading was compared with the past week's median and its median absolute deviation, both frozen at the end of training.</dd>
+            <dt>If we hadn't</dt><dd>Standard deviation is stretched by extreme readings, so one hurricane week would squash every normal day into a narrow band near zero, hiding the differences that matter. The median based version keeps ordinary variation visible.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>Zero or median for missing precipitation and traffic counts?</h4>
+          <dl>
+            <dt>What we did</dt><dd>Zero, because a missing precipitation report almost always means it didn't rain, and a missing count means no flights were scheduled.</dd>
+            <dt>If we hadn't</dt><dd>Filling with the median would invent a little rain or traffic that wasn't there, blurring the line between dry and wet hours.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>One column per category, or target encoding?</h4>
+          <dl>
+            <dt>What we did</dt><dd>Target encoding: each airline, airport, route and hour replaced by its past delay rate from training data, with unseen ones given the overall average.</dd>
+            <dt>If we hadn't</dt><dd>One yes or no column per category means hundreds of mostly empty columns, which is slow at 31.7 million rows and hard for trees to use. The catch with target encoding is small groups: a route with ten flights has a noisy delay rate, and computing rates on all the data would leak the answer. We computed them on training data only and noted rare routes as a known weak spot.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>How to deal with only one flight in five being late?</h4>
+          <dl>
+            <dt>What we did</dt><dd>Undersampling the training data (about three on time flights per delayed one for the trees, two for the neural networks) and class weights for logistic regression. Validation and test data were left untouched.</dd>
+            <dt>If we hadn't</dt><dd>Trained on the raw mix, a model can score 80% by always saying “on time”, and it drifts toward that. Undersampling throws away some on time flights, but with millions of training rows there was plenty left, and training got faster. Keeping validation and test at the real mix means the scores reflect real life.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>Default warning threshold or a tuned one?</h4><p class="tag">Measured</p>
+          <dl>
+            <dt>What we did</dt><dd>Every model's threshold was tuned on validation data for the best F2.</dd>
+            <dt>If we hadn't</dt><dd>At the default of 0.5, our PySpark neural network caught only 57% of delays (F2 0.455). At 0.3 it caught 86% (F2 0.513). Going too low has a cost too: at 0.1 it caught nearly every delay but almost every flight got a warning, so the warnings stopped meaning anything.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>One shared pipeline or three?</h4>
+          <dl>
+            <dt>What we did</dt><dd>Three: scaled data for logistic regression and random forest, original values for gradient boosted trees, and a separate scaled, more balanced set for the neural networks.</dd>
+            <dt>If we hadn't</dt><dd>One pipeline would have forced a compromise. Unscaled inputs make neural networks train slowly and unstably, and the neural networks' extra undersampling would have shrunk the data the trees learn from. Three pipelines meant more to maintain, so each was saved as a ready dataset to avoid reprocessing.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>All 104 features, or compress them with PCA?</h4><p class="tag">Measured</p>
+          <dl>
+            <dt>What we did</dt><dd>All 104 features. We tested PCA, which squeezed them into 55 combined features keeping 95% of the variation.</dd>
+            <dt>If we hadn't</dt><dd>PCA halved training time (57 minutes against 2 hours), but F2 fell from 0.455 to 0.396. The detail it threw away was exactly what helped catch delays, so the speed wasn't worth it.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>Bigger neural networks or smaller?</h4><p class="tag">Measured</p>
+          <dl>
+            <dt>What we did</dt><dd>The smallest network, one hidden layer of 64 units.</dd>
+            <dt>If we hadn't</dt><dd>Two larger networks took 3 and 6 hours instead of 2 and scored lower (F2 0.410 and 0.437 against 0.455). More layers gave the network more room to fit noise without finding more signal.</dd>
+          </dl>
+        </div>
+        <div class="tradeoff">
+          <h4>Best score or reasonable cost?</h4><p class="tag">Measured</p>
+          <dl>
+            <dt>What we did</dt><dd>Gradient boosted trees as the main model, and no ensemble.</dd>
+            <dt>If we hadn't</dt><dd>Boosted trees beat random forest by only 0.004 in F2 on the test year but took about 7.5 hours instead of 7 minutes. We also tried averaging boosted trees with XGBoost: it gained 0.0005 on validation, too little to justify two models. On a tight cluster budget, time spent on features paid off more than time spent on bigger models.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <figure>
+        <a href="../../images/fd-pipelines.jpg"><img src="../../images/fd-pipelines.jpg" width="1400" height="788" loading="lazy" alt="Slide: three pipelines, six models. Flights and weather are joined, cleaned, turned into features and split by time, then fed through three pipelines for the different models, each followed by threshold tuning and a final test."></a>
+        <figcaption>The three pipelines, from our final presentation.</figcaption>
+      </figure>
+
+      <h3 id="overfitting">How we kept the models from overfitting</h3>
+      <p class="about-text">A model overfits when it memorizes its training data instead of learning patterns that carry over to new flights. It looks great in training and disappoints in real use. We worked against that in four ways.</p>
+      <ul class="points">
+        <li><strong>Judge on data the model never trained on.</strong> Every setting was chosen on validation days that came after the training days, and the 2019 test year was used once, at the very end.</li>
+        <li><strong>Cross validation by date.</strong> For grid searches, the training data was split into three folds by calendar date, so each setting was scored three times on days it hadn't seen.</li>
+        <li><strong>Limit how complex each model can get.</strong>
+          Logistic regression had a penalty on large weights, with the strength tuned.
+          Random forest trees stopped at depth 10, each leaf needed at least 100 flights, and each tree saw a random 80% of the data.
+          Boosted trees had their depth, number of trees and step size chosen by cross validation.
+          Neural networks had an L2 penalty (we tested five strengths and kept 0.001), dropout in PyTorch and the Transformer, and early stopping wherever the library allowed it.</li>
+        <li><strong>Stop training at the right time.</strong> In the sklearn, PyTorch and Transformer networks, early stopping watched the validation score and stopped once it hadn't improved for 15 rounds (7 for the Transformer), then kept the best version.</li>
+      </ul>
+      <p class="about-text">Then we checked that it worked:</p>
+      <ul class="points">
+        <li><strong>Validation and test scores matched.</strong> Gradient boosted trees scored 0.523 on validation and 0.527 on the unseen 2019 year. An overfit model drops sharply on new data.</li>
+        <li><strong>Training and validation loss moved together</strong> in the neural networks, with only a small, steady gap, and early stopping kicked in before they drifted apart.</li>
+        <li><strong>Removing almost any feature group hurt the score on held out data</strong> (see the ablation study below), which means the model was using real signal rather than memorized quirks.</li>
+      </ul>
+
+      <h3 id="tuning">How we tuned the settings</h3>
+      <p class="about-text">Each model has settings that aren't learned from the data and have to be chosen, like how deep a tree can grow. We tried combinations, scored each on held out data and kept the best. Two steps every time: first choose the model's settings, then choose its warning threshold.</p>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Model</th><th>What we tuned</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Logistic regression</td><td>Penalty strength (0.001, 0.01, 0.1) and the mix of L1 and L2 penalties</td><td>All 9 combinations, three fold cross validation</td></tr>
+            <tr><td>Random forest</td><td>100 trees, depth 10, at least 100 flights per leaf, 80% sampling</td><td>Sensible fixed settings to save cluster time; threshold tuned</td></tr>
+            <tr><td>Gradient boosted trees</td><td>Tree depth, number of trees, step size</td><td>8 combinations, three fold cross validation</td></tr>
+            <tr><td>PySpark neural network</td><td>Network size (three sizes and a PCA version), training iterations</td><td>Compared on validation; iterations picked from a learning curve</td></tr>
+            <tr><td>sklearn neural network</td><td>Optimizer (Adam, LBFGS, SGD) and L2 strength (five values)</td><td>Experiments on a 300,000 flight sample</td></tr>
+            <tr><td>PyTorch neural network</td><td>Network size, dropout</td><td>Compared on validation, with early stopping</td></tr>
+            <tr><td>Transformer</td><td>Learning rate, weight decay, size, attention heads, layers, dropout</td><td>Automated search with Optuna: short trial runs, then the best retrained for longer</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="about-text"><strong>Then the threshold.</strong> For each finished model we tried a range of thresholds, usually 0.10 to 0.50, on validation data and kept the one with the best F2: 0.2 for boosted trees, 0.3 for the PySpark network, 0.4 for random forest and 0.17 for the Transformer.</p>
+      <h4>Tradeoffs in tuning</h4>
+      <ul class="points">
+        <li><strong>Grid search gets expensive fast.</strong> 8 combinations times 3 folds is 24 full training runs on millions of rows. That's why the grids were small and random forest kept fixed settings in the final runs.</li>
+        <li><strong>Settings were scored by AUROC, the threshold by F2.</strong> The boosted trees grid search, for example, picked settings by AUROC, which judges how well a model ranks flights from least to most likely to be late, regardless of threshold, which makes it a stable target for choosing settings. F2 depends on the threshold, so it was optimized in its own step.</li>
+        <li><strong>Short trials for the Transformer.</strong> Each Optuna trial ran for 15 rounds instead of 50, trading some accuracy in judging each trial for many more trials in the same time.</li>
+      </ul>
+
+      <h3 id="models">Why we chose these models</h3>
+      <ul class="points">
+        <li><strong>Logistic regression</strong> is the simplest model that gives a probability. It sets the bar every other model has to beat, and it's easy to explain.</li>
+        <li><strong>Random forest and gradient boosted trees</strong> are known to work well on tables of data. They find combinations of features on their own, like “evening flight on a holiday from a busy hub”, which a linear model can't.</li>
+        <li><strong>Neural networks</strong> were a requirement from our client, and we wanted to know whether they could beat trees at this scale. We built them twice, in PySpark to train on all the data and in PyTorch for more control.</li>
+        <li><strong>The Transformer</strong> tested whether a modern architecture adds anything on this kind of data. It matched the trees but didn't beat them.</li>
+      </ul>
+
+
+      <h3 id="scaling">Which models needed scaling, and why</h3>
+      <p class="about-text">Scaling puts every feature on a similar range, so that distance in miles (in the thousands) doesn't drown out a holiday flag (0 or 1).</p>
+      <ul class="points">
+        <li><strong>Logistic regression needs it,</strong> so that its weights and its penalty for large weights treat every feature fairly.</li>
+        <li><strong>Neural networks need it most.</strong> They learn by small steps, and those steps only work well when every input sits on a similar range. Without scaling, training is slow and unstable.</li>
+        <li><strong>Trees don't need it.</strong> A tree only asks questions like “is the wind above 20 mph?”, which depend on the order of values, not their size. So gradient boosted trees got the original values. Random forest didn't need scaling either, but used the scaled data so its results were directly comparable with logistic regression's.</li>
+        <li><strong>Weather got special scaling.</strong> We compared each reading with the median of the previous seven days, which says “unusually windy compared with the past week” and isn't thrown off by one extreme storm.</li>
+      </ul>
+
+
+      <h3 id="missing">Filling in missing values</h3>
+      <ul class="points">
+        <li><strong>Weather readings:</strong> filled with the median of the previous seven days of training data. The median isn't skewed by a single storm, the seven day window keeps it seasonal, and it only uses the past.</li>
+        <li><strong>Pressure and wet bulb temperature,</strong> missing for 40% to 60% of readings: calculated from the values that were there, using physics (elevation, temperature and the Stull formula), with a flag marking each filled value.</li>
+        <li><strong>Precipitation and airport traffic counts:</strong> filled with zero, because no report almost always means no rain or no scheduled flights.</li>
+        <li><strong>The previous flight's delay:</strong> zero when there's no earlier flight on record for that plane, since there's nothing to be late.</li>
+        <li><strong>Flights with no answer,</strong> cancelled or diverted ones (1.8%), were removed, since there's no “late or not” to learn from.</li>
+      </ul>
+
+
+      <h3 id="ablation">What an ablation study is</h3>
+      <p class="about-text">An ablation study takes one piece out and measures what changes. We removed each of the eight feature families in turn, retrained a neural network on a 300,000 flight sample and measured how much F2 dropped. Time of day and calendar features mattered by far the most. Congestion, airport facts, weather and combinations each mattered about a third as much. One family, the composite indices, slightly helped when removed, meaning it added noise.</p>
+
+      <figure>
+        <a href="../../images/fd-ablation.png"><img src="../../images/fd-ablation.png" width="1400" height="830" loading="lazy" alt="Bar chart of the change in F2 when each feature family is removed. Time features: minus 0.097. Congestion, airport facts, weather and combinations: about minus 0.03 each. Holidays: minus 0.010. Target encoding: minus 0.008. Composite indices: plus 0.008."></a>
+        <figcaption>How much F2 drops when each feature family is removed. Longer red bars mean the family matters more.</figcaption>
+      </figure>
+
+
+      <h3 id="takeaways">Big takeaways</h3>
+      <ul class="points">
+        <li><strong>The warning threshold mattered more than the model.</strong> With default settings the models missed about two thirds of delays. Once the threshold was tuned, logistic regression, random forest and boosted trees scored almost the same.</li>
+        <li><strong>Trees beat neural networks on this kind of data.</strong> The neural networks only caught up after tuning, and took much longer to train.</li>
+        <li><strong>One simple fact says a lot.</strong> If the plane's previous flight left late, the chance of a delay goes from 17% to 28%.</li>
+        <li><strong>There's a limit.</strong> Mechanical problems, crew shortages and air traffic control don't show up in schedules or weather, so catching most delays means about four false alarms for every real one.</li>
+      </ul>
+
+
+      <p class="meta">From our final report and notebooks. Built with Anne Hsu, Colton Hester, Kenzie Nguyen and Sai Sriya Mudigonda. <a href="../">Back to the project</a>.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><a href="../../">Nitya Sree Cheera</a> · <a href="mailto:nityasree_cheera@berkeley.edu">nityasree_cheera@berkeley.edu</a> · <a href="https://github.com/nityasreecheera">GitHub</a></div>
+</footer>
+
+</body>
+</html>

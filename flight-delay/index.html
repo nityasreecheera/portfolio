@@ -27,7 +27,7 @@
 
       <div class="actions">
         <a class="button primary" href="https://github.com/nityasreecheera/flight-delay-prediction">Code and report</a>
-        <a class="button" href="#lessons">Lessons learned</a>
+        <a class="button" href="lessons/">Lessons learned</a>
       </div>
 
       <figure>
@@ -112,80 +112,8 @@
       </dl>
 
       <h3 id="lessons">Lessons learned</h3>
-
-      <h4>A yes or no question</h4>
-      <p class="about-text">This is a classification problem: for each flight the model answers one yes or no question, “will it leave 15 minutes late or more?” It doesn't try to guess how many minutes late. Under the hood it gives a probability, and a threshold turns that into a yes or no. A low threshold warns more often, catching more delays but raising more false alarms.</p>
-
-      <h4>Why F2 and recall, not accuracy or F1</h4>
-      <ul class="points">
-        <li><strong>Accuracy is misleading here.</strong> Only about one flight in five is delayed, so a model that always says “on time” is 80% accurate and catches nothing.</li>
-        <li><strong>Recall is the share of real delays the model catches.</strong> Precision is the share of its warnings that turn out to be real delays.</li>
-        <li><strong>F1 treats both as equally important,</strong> but they aren't. A missed delay strands passengers and crews, while a false alarm mostly means someone checks on a flight that turns out fine.</li>
-        <li><strong>F2 counts recall twice as much as precision,</strong> which matches that difference in cost. So we tuned every model for F2, accepting more false alarms to catch more delays.</li>
-      </ul>
-
-      <h4>Data leakage, and how we prevented it</h4>
-      <p class="about-text">Data leakage is when a model gets to see information it wouldn't have at the moment it makes a prediction. The obvious case is the actual departure delay itself: give a model that column and it will look perfect, because it's reading the answer. Leakage makes a model look great on paper and fail in real use. We guarded against it at every step:</p>
-      <ul class="points">
-        <li><strong>Removed every column recorded after departure,</strong> more than 25 of them, such as actual departure time, takeoff time and taxi time.</li>
-        <li><strong>Split the data by time, not at random.</strong> The model trains on earlier dates and is tested on later ones, so it never learns from the future.</li>
-        <li><strong>Learned every statistic from the training data only.</strong> Averages, delay rates, busy airport thresholds and scaling values were all computed on training data, then frozen and reused for validation and test.</li>
-        <li><strong>Used weather only up to an hour before departure,</strong> the latest moment a real prediction could be made.</li>
-        <li><strong>Touched the 2019 test year only once,</strong> at the very end, after all settings and thresholds had been chosen on validation data.</li>
-      </ul>
-
-      <h4>Why we chose these models</h4>
-      <ul class="points">
-        <li><strong>Logistic regression</strong> is the simplest model that gives a probability. It sets the bar every other model has to beat, and it's easy to explain.</li>
-        <li><strong>Random forest and gradient boosted trees</strong> are known to work well on tables of data. They find combinations of features on their own, like “evening flight on a holiday from a busy hub”, which a linear model can't.</li>
-        <li><strong>Neural networks</strong> were a requirement from our client, and we wanted to know whether they could beat trees at this scale. We built them twice, in PySpark to train on all the data and in PyTorch for more control.</li>
-        <li><strong>The Transformer</strong> tested whether a modern architecture adds anything on this kind of data. It matched the trees but didn't beat them.</li>
-      </ul>
-
-      <h4>Which models needed scaling, and why</h4>
-      <p class="about-text">Scaling puts every feature on a similar range, so that distance in miles (in the thousands) doesn't drown out a holiday flag (0 or 1).</p>
-      <ul class="points">
-        <li><strong>Logistic regression needs it,</strong> so that its weights and its penalty for large weights treat every feature fairly.</li>
-        <li><strong>Neural networks need it most.</strong> They learn by small steps, and those steps only work well when every input sits on a similar range. Without scaling, training is slow and unstable.</li>
-        <li><strong>Trees don't need it.</strong> A tree only asks questions like “is the wind above 20 mph?”, which depend on the order of values, not their size. So gradient boosted trees got the original values. Random forest didn't need scaling either, but used the scaled data so its results were directly comparable with logistic regression's.</li>
-        <li><strong>Weather got special scaling.</strong> We compared each reading with the median of the previous seven days, which says “unusually windy compared with the past week” and isn't thrown off by one extreme storm.</li>
-      </ul>
-
-      <h4>Why different pipelines</h4>
-      <p class="about-text">Because the models need their inputs prepared differently, we built three pipelines from the same features. One scales the data for logistic regression and random forest. One keeps the original values for gradient boosted trees. The neural networks had their own, which scales the data and keeps fewer on time flights for training. The two main pipelines were saved as ready datasets, so whoever trained a model could load it directly instead of reprocessing 31.7 million flights every time.</p>
-
-      <figure>
-        <a href="../images/fd-pipelines.jpg"><img src="../images/fd-pipelines.jpg" width="1400" height="788" loading="lazy" alt="Slide: three pipelines, six models. Flights and weather are joined, cleaned, turned into features and split by time, then fed through three pipelines for the different models, each followed by threshold tuning and a final test."></a>
-        <figcaption>How raw data becomes six models, through three pipelines.</figcaption>
-      </figure>
-
-      <h4>Target encoding</h4>
-      <p class="about-text">Airlines, airports, routes and departure hours are categories, not numbers, and there are a lot of them: 368 origin airports alone, and even more routes. Giving every airport its own yes or no column would add hundreds of mostly empty columns. Instead, target encoding replaces each category with its historical delay rate, so an airline becomes, say, “late 22% of the time”. That's one column, it's meaningful to the model, and the airline and route delay rates ended up among its most important features. The rates were computed on training data only, and anything not seen in training got the overall average.</p>
-
-      <h4>Filling in missing values</h4>
-      <ul class="points">
-        <li><strong>Weather readings:</strong> filled with the median of the previous seven days of training data. The median isn't skewed by a single storm, the seven day window keeps it seasonal, and it only uses the past.</li>
-        <li><strong>Pressure and wet bulb temperature,</strong> missing for 40% to 60% of readings: calculated from the values that were there, using physics (elevation, temperature and the Stull formula), with a flag marking each filled value.</li>
-        <li><strong>Precipitation and airport traffic counts:</strong> filled with zero, because no report almost always means no rain or no scheduled flights.</li>
-        <li><strong>The previous flight's delay:</strong> zero when there's no earlier flight on record for that plane, since there's nothing to be late.</li>
-        <li><strong>Flights with no answer,</strong> cancelled or diverted ones (1.8%), were removed, since there's no “late or not” to learn from.</li>
-      </ul>
-
-      <h4>What an ablation study is</h4>
-      <p class="about-text">An ablation study takes one piece out and measures what changes. We removed each of the eight feature families in turn, retrained a neural network on a 300,000 flight sample and measured how much F2 dropped. Time of day and calendar features mattered by far the most. Congestion, airport facts, weather and combinations each mattered about a third as much. One family, the composite indices, slightly helped when removed, meaning it added noise.</p>
-
-      <figure>
-        <a href="../images/fd-ablation.png"><img src="../images/fd-ablation.png" width="1400" height="830" loading="lazy" alt="Bar chart of the change in F2 when each feature family is removed. Time features: minus 0.097. Congestion, airport facts, weather and combinations: about minus 0.03 each. Holidays: minus 0.010. Target encoding: minus 0.008. Composite indices: plus 0.008."></a>
-        <figcaption>How much F2 drops when each feature family is removed. Longer red bars mean the family matters more.</figcaption>
-      </figure>
-
-      <h4>Big takeaways</h4>
-      <ul class="points">
-        <li><strong>The warning threshold mattered more than the model.</strong> With default settings the models missed about two thirds of delays. Once the threshold was tuned, logistic regression, random forest and boosted trees scored almost the same.</li>
-        <li><strong>Trees beat neural networks on this kind of data.</strong> The neural networks only caught up after tuning, and took much longer to train.</li>
-        <li><strong>One simple fact says a lot.</strong> If the plane's previous flight left late, the chance of a delay goes from 17% to 28%.</li>
-        <li><strong>There's a limit.</strong> Mechanical problems, crew shortages and air traffic control don't show up in schedules or weather, so catching most delays means about four false alarms for every real one.</li>
-      </ul>
+      <p class="about-text">The tradeoffs we weighed (and what would have happened otherwise), how we prevented data leakage and overfitting, how we tuned each model, and what the ablation study showed.</p>
+      <div class="actions"><a class="button" href="lessons/">Read the lessons learned →</a></div>
 
       <h3>Built with</h3>
       <ul class="stack">

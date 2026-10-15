@@ -195,3 +195,20 @@
   }
   .flow figcaption { margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
   .flow .key { display: inline-block; width: 0.9rem; height: 0.6rem; border: 1.5px solid var(--accent); border-radius: 2px; flex: none; }
+
+  /* Lessons pages: contents list and tradeoff cards. */
+  .toc { margin: 2rem 0 0.5rem; padding: 1rem 1.25rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--raised); }
+  .toc .label { margin-bottom: 0.5rem; }
+  .toc ol { margin: 0; padding-left: 1.2rem; columns: 2; column-gap: 2rem; font-size: 0.875rem; }
+  .toc li { margin: 0.2rem 0; break-inside: avoid; }
+  .toc a { color: var(--ink-soft); text-decoration: none; }
+  .toc a:hover { color: var(--accent); text-decoration: underline; }
+  @media (max-width: 40rem) { .toc ol { columns: 1; } }
+  .tradeoffs { display: grid; gap: 0.9rem; margin-top: 1rem; }
+  .tradeoff { border: 1px solid var(--rule); border-radius: 6px; background: var(--raised); padding: 0.9rem 1.1rem 1rem; position: relative; }
+  .tradeoff h4 { margin: 0 0 0.5rem; color: var(--ink); font-size: 1rem; padding-right: 5.5rem; }
+  .tradeoff .tag { position: absolute; top: 0.95rem; right: 1rem; margin: 0; font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0.05rem 0.5rem; }
+  .tradeoff dl { margin: 0; display: grid; grid-template-columns: 7.5rem 1fr; gap: 0.4rem 1rem; font-size: 0.9375rem; }
+  .tradeoff dt { color: var(--ink-faint); font-size: 0.8125rem; padding-top: 0.1rem; }
+  .tradeoff dd { margin: 0; color: var(--ink-soft); text-wrap: pretty; }
+  @media (max-width: 40rem) { .tradeoff dl { grid-template-columns: 1fr; gap: 0.15rem; } .tradeoff dd + dt { margin-top: 0.5rem; } }
