@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Other Events · Nitya Sree Cheera</title>
+<meta name="description" content="Other Events: I used Claude to read 24,091 Item 8.01 sections of company 8-K filings. Most of them report news that appears nowhere else in the filing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="project-page">
+<div class="topbar">
+  <div class="wrap">
+    <a class="name" href="../">Nitya Sree Cheera</a>
+    <a href="../#projects">All projects</a>
+  </div>
+</div>
+
+<main>
+  <section class="project" id="other-events">
+    <div class="wrap">
+      <p class="label">Personal research · in progress</p>
+      <h2>Other Events</h2>
+      <p class="tagline">When something important happens at a US public company, it files a form called an 8-K. Most sections of the form have a fixed topic, like a new CEO or a signed deal. Item 8.01, “Other Events”, is the catch all: anything the company wants investors to know that doesn't fit anywhere else. I used Claude to read 24,091 of these sections and asked a simple question: is this news, or a repeat?</p>
+
+      <h3>Most of it is new news</h3>
+      <p class="about-text">It's easy to assume Item 8.01 just repeats the rest of the filing. It doesn't. In 77% of filings, Item 8.01 reports something that no other section of the same 8-K mentions. Only 23% repeat another section.</p>
+      <figure>
+        <a href="../images/k8-new-vs-repeat.png"><img src="../images/k8-new-vs-repeat.png" width="1350" height="450" alt="Bar chart: of 24,091 Item 8.01 filings from January 2024 to January 2026, 77% (18,477) report new news and 23% (5,614) repeat another section of the same filing."></a>
+        <figcaption>Every Item 8.01 filing from about 3,900 public companies, January 2024 to January 2026.</figcaption>
+      </figure>
+      <p class="note">If you read only the main sections of an 8-K, you miss most of what Item 8.01 says. Analysts, investors and anyone building tools on SEC filings should read it too.</p>
+
+      <h3>What the new news is about</h3>
+      <ul class="points">
+        <li><strong>Money going in and out.</strong> Dividends, borrowing and share sales are the three most common kinds of news, in about 40% of filings.</li>
+        <li><strong>Some news shows up only here.</strong> Dividends (96% new), buybacks (93%) and lawsuits (92%) almost never appear in another section. For these, Item 8.01 is the only place to find them.</li>
+        <li><strong>The repeats have a pattern.</strong> Leadership changes (43%) and share sales (41%) repeat the most. Usually the same press release is filed twice, or the signed agreement behind a share sale also goes in its own section.</li>
+        <li><strong>Drug companies repeat the most.</strong> A third of life sciences filings are repeats, mostly because biotechs often file the same trial results press release in two places.</li>
+      </ul>
+      <figure>
+        <a href="../images/k8-repeat-by-kind.png"><img src="../images/k8-repeat-by-kind.png" width="1500" height="1425" loading="lazy" alt="Stacked bar chart of 26 kinds of news. Leadership changes repeat most (43%), then share sales (41%) and results (36%). Lawsuits (8%), buybacks (7%) and dividends (4%) almost never repeat."></a>
+        <figcaption>Share of filings that repeat another section, for each kind of news. The number in brackets is how many filings have that kind of news.</figcaption>
+      </figure>
+
+      <h3>How I did it</h3>
+      <ul class="points">
+        <li><strong>Collected the filings.</strong> Every 8-K with an Item 8.01 from SEC EDGAR, January 2024 to January 2026, for public companies with a stock ticker.</li>
+        <li><strong>Labeled the news.</strong> Claude read each Item 8.01 and tagged it with one or more of 27 kinds of news, a more detailed type within each, and a tone. On 40 test filings, Claude Sonnet got about 98% right against 90% for the cheaper Haiku, so I used Sonnet.</li>
+        <li><strong>Checked for repeats.</strong> I downloaded each full filing, split it into its numbered sections, and had Claude compare Item 8.01 with every other section: same news, related news, or different news. That was 15,948 comparisons, for about $16.</li>
+        <li><strong>Fixed what the check turned up.</strong> In 55 filings the text I had collected was only a pointer like “see Item 8.01 below”, not the section itself. I pulled the real text and labeled it again.</li>
+      </ul>
+
+      <h3>By the numbers</h3>
+      <dl class="numbers">
+        <div><dt>24,091</dt><dd>Item 8.01 sections read</dd></div>
+        <div><dt>27</dt><dd>kinds of news</dd></div>
+        <div><dt>77%</dt><dd>report something new</dd></div>
+        <div><dt>15,948</dt><dd>section comparisons</dd></div>
+      </dl>
+
+      <h3>What's next</h3>
+      <ul class="points">
+        <li><strong>How stocks move.</strong> How each kind of news moves the stock in the 10 trading days before and after the filing.</li>
+        <li><strong>All the older filings.</strong> A cheaper classifier, trained on Claude's labels, to cover about 300,000 older filings.</li>
+        <li><strong>Insider trades.</strong> Whether company insiders buy or sell around this news.</li>
+      </ul>
+
+      <h3>Built with</h3>
+      <ul class="stack">
+        <li>Python</li><li>pandas</li><li>Claude Sonnet</li><li>Anthropic Batches API</li>
+        <li>SEC EDGAR</li><li>matplotlib</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><a href="../">Nitya Sree Cheera</a> · <a href="mailto:nityasree_cheera@berkeley.edu">nityasree_cheera@berkeley.edu</a> · <a href="https://github.com/nityasreecheera">GitHub</a></div>
+</footer>
+
+</body>
+</html>
