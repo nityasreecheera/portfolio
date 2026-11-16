@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Other Events · Nitya Sree Cheera</title>
-<meta name="description" content="Other Events: I used Claude to read 24,091 Item 8.01 sections of company 8-K filings. Most of them report news that appears nowhere else in the filing.">
+<title>8-K Filings · Nitya Sree Cheera</title>
+<meta name="description" content="8-K Filings: what company 8-K filings really say. First part: I used Claude to read 24,091 Item 8.01 sections, and most report news that appears nowhere else in the filing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
@@ -19,13 +19,16 @@
 </div>
 
 <main>
-  <section class="project" id="other-events">
+  <section class="project" id="8k-filings">
     <div class="wrap">
       <p class="label">Personal research · in progress</p>
-      <h2>Other Events</h2>
-      <p class="tagline">When something important happens at a US public company, it files a form called an 8-K. Most sections of the form have a fixed topic, like a new CEO or a signed deal. Item 8.01, “Other Events”, is the catch all: anything the company wants investors to know that doesn't fit anywhere else. I used Claude to read 24,091 of these sections and asked a simple question: is this news, or a repeat?</p>
+      <h2>8-K Filings</h2>
+      <p class="tagline">When something important happens at a US public company, it files a form called an 8-K. The form is split into numbered sections, called Items, and most have a fixed topic, like a new CEO (Item 5.02) or a signed deal (Item 1.01). I'm studying what these filings really say, and how stocks move around them.</p>
 
-      <h3>Most of it is new news</h3>
+      <h3 class="part">Item 8.01: Other Events</h3>
+      <p class="about-text">Item 8.01 is the catch all: anything the company wants investors to know that doesn't fit anywhere else. I used Claude to read 24,091 of these sections and asked a simple question: is this news, or a repeat?</p>
+
+      <h4>Most of it is new news</h4>
       <p class="about-text">It's easy to assume Item 8.01 just repeats the rest of the filing. It doesn't. In 77% of filings, Item 8.01 reports something that no other section of the same 8-K mentions. Only 23% repeat another section.</p>
       <figure>
         <a href="../images/k8-new-vs-repeat.png"><img src="../images/k8-new-vs-repeat.png" width="1350" height="450" alt="Bar chart: of 24,091 Item 8.01 filings from January 2024 to January 2026, 77% (18,477) report new news and 23% (5,614) repeat another section of the same filing."></a>
@@ -33,7 +36,7 @@
       </figure>
       <p class="note">If you read only the main sections of an 8-K, you miss most of what Item 8.01 says. Analysts, investors and anyone building tools on SEC filings should read it too.</p>
 
-      <h3>What the new news is about</h3>
+      <h4>What the new news is about</h4>
       <ul class="points">
         <li><strong>Money going in and out.</strong> Dividends, borrowing and share sales are the three most common kinds of news, in about 40% of filings.</li>
         <li><strong>Some news shows up only here.</strong> Dividends (96% new), buybacks (93%) and lawsuits (92%) almost never appear in another section. For these, Item 8.01 is the only place to find them.</li>
@@ -45,7 +48,7 @@
         <figcaption>Share of filings that repeat another section, for each kind of news. The number in brackets is how many filings have that kind of news.</figcaption>
       </figure>
 
-      <h3>How I did it</h3>
+      <h4>How I did it</h4>
       <ul class="points">
         <li><strong>Collected the filings.</strong> Every 8-K with an Item 8.01 from SEC EDGAR, January 2024 to January 2026, for public companies with a stock ticker.</li>
         <li><strong>Labeled the news.</strong> Claude read each Item 8.01 and tagged it with one or more of 27 kinds of news, a more detailed type within each, and a tone. On 40 test filings, Claude Sonnet got about 98% right against 90% for the cheaper Haiku, so I used Sonnet.</li>
@@ -53,7 +56,7 @@
         <li><strong>Fixed what the check turned up.</strong> In 55 filings the text I had collected was only a pointer like “see Item 8.01 below”, not the section itself. I pulled the real text and labeled it again.</li>
       </ul>
 
-      <h3>By the numbers</h3>
+      <h4>By the numbers</h4>
       <dl class="numbers">
         <div><dt>24,091</dt><dd>Item 8.01 sections read</dd></div>
         <div><dt>27</dt><dd>kinds of news</dd></div>
