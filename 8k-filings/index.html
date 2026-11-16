@@ -71,9 +71,37 @@
       <h4>How I did it</h4>
       <p class="about-text">I collected every Item 8.01 from SEC EDGAR, had Claude label the kind of news in each one, then had Claude compare it with the other sections of the same filing.</p>
 
+      <h3 class="part">Stock moves around the filing</h3>
+      <p class="about-text">How does a company's stock move in the 10 trading days before and after it files an Item 8.01? I measured each stock's daily move minus the S&amp;P 500's, so a market wide rally or drop doesn't count.</p>
+
+      <h4>The first reaction</h4>
+      <ul class="points">
+        <li><strong>Buybacks lift the stock most:</strong> +1.7% on the filing day and the day after. (This leaves out News Corp, which files a buyback notice almost every trading day.)</li>
+        <li><strong>Layoffs and bankruptcy hit hardest:</strong> −4.6% and −4.0%.</li>
+        <li><strong>Most news barely moves the stock.</strong> Borrowing, mergers, lawsuits and leadership changes all move it by half a percent or less.</li>
+      </ul>
+      <figure>
+        <a href="../images/k8-reaction-by-kind.png"><img src="../images/k8-reaction-by-kind.png" width="1500" height="1290" loading="lazy" alt="Bar chart of the stock move against the market on the filing day and the day after, by kind of news. Buybacks +1.7%, dividends +0.4%. Layoffs −4.6%, bankruptcy −4.0%, stock splits and share changes −2.6%, share sales −1.4%. Most other kinds move less than 1%."></a>
+        <figcaption>Average move against the S&amp;P 500 on the filing day and the next trading day. Kinds of news with fewer than 50 filings are left out. Buybacks leave out News Corp.</figcaption>
+      </figure>
+
+      <h4>Which kinds of news to focus on</h4>
+      <p class="about-text">Five kinds of news stand out, because the move is large, it shows up across hundreds of companies, and it keeps going after the filing:</p>
+      <ul class="points">
+        <li><strong>Stock splits and share changes.</strong> Most are reverse splits, which companies do when their share price gets too low. These stocks slide before the filing and keep sliding after it: about 14% below the market over the 21 days.</li>
+        <li><strong>Share sales.</strong> Selling new stock spreads the company over more shares. The price drops on the news and keeps falling, about 6% below the market by day 10.</li>
+        <li><strong>Stock exchange listing.</strong> Most of these say the company has fixed a listing problem, such as a share price below $1, and the rest are warnings. Either way, the stock slides steadily, about 9% below the market over the 21 days.</li>
+        <li><strong>Layoffs and bankruptcy.</strong> These have the biggest drops on the day, but the stock is already falling for days before. The trouble is often visible before it's filed.</li>
+        <li><strong>Buybacks.</strong> The one clear positive. The stock dips slightly before the announcement, jumps when it's filed, and holds the gain.</li>
+      </ul>
+      <figure>
+        <a href="../images/k8-moves-focus.png"><img src="../images/k8-moves-focus.png" width="1800" height="990" loading="lazy" alt="Six small line charts of the stock move against the market from 10 days before to 10 days after the filing. Stock splits and share changes fall to about −14%, share sales to −6%, layoffs to −11%, bankruptcy to −8%, stock exchange listing to −9%. Buybacks rise slightly and stay above the all filings line."></a>
+        <figcaption>The dashed line is the average of all filings. It drifts about 3% below the market because many of these companies are small, and small stocks lagged the S&amp;P 500 in 2024 and 2025. Compare each line with it, not only with zero.</figcaption>
+      </figure>
+
       <h3>What's next</h3>
       <ul class="points">
-        <li><strong>How stocks move.</strong> How each kind of news moves the stock in the 10 trading days before and after the filing.</li>
+        <li><strong>Good news versus bad news.</strong> Splitting each kind of news by tone, since a failed drug trial and a successful one move the stock in opposite directions.</li>
         <li><strong>All the older filings.</strong> A classifier trained on Claude's labels, to cover about 300,000 older filings.</li>
         <li><strong>Insider trades.</strong> Whether company insiders buy or sell around this news.</li>
       </ul>
