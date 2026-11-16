@@ -51,8 +51,8 @@
       <h4>How I did it</h4>
       <ul class="points">
         <li><strong>Collected the filings.</strong> Every 8-K with an Item 8.01 from SEC EDGAR, January 2024 to January 2026, for public companies with a stock ticker.</li>
-        <li><strong>Labeled the news.</strong> Claude read each Item 8.01 and tagged it with one or more of 27 kinds of news, a more detailed type within each, and a tone. On 40 test filings, Claude Sonnet got about 98% right against 90% for the cheaper Haiku, so I used Sonnet.</li>
-        <li><strong>Checked for repeats.</strong> I downloaded each full filing, split it into its numbered sections, and had Claude compare Item 8.01 with every other section: same news, related news, or different news. That was 15,948 comparisons, for about $16.</li>
+        <li><strong>Labeled the news.</strong> Claude read each Item 8.01 and tagged it with one or more of 27 kinds of news, a more detailed type within each, and a tone. On 40 test filings, Claude Sonnet got about 98% right against about 90% for Claude Haiku, so I used Sonnet.</li>
+        <li><strong>Checked for repeats.</strong> I downloaded each full filing, split it into its numbered sections, and had Claude compare Item 8.01 with every other section: same news, related news, or different news. That was 15,948 comparisons.</li>
         <li><strong>Fixed what the check turned up.</strong> In 55 filings the text I had collected was only a pointer like “see Item 8.01 below”, not the section itself. I pulled the real text and labeled it again.</li>
       </ul>
 
@@ -67,7 +67,7 @@
       <h3>What's next</h3>
       <ul class="points">
         <li><strong>How stocks move.</strong> How each kind of news moves the stock in the 10 trading days before and after the filing.</li>
-        <li><strong>All the older filings.</strong> A cheaper classifier, trained on Claude's labels, to cover about 300,000 older filings.</li>
+        <li><strong>All the older filings.</strong> A classifier trained on Claude's labels, to cover about 300,000 older filings.</li>
         <li><strong>Insider trades.</strong> Whether company insiders buy or sell around this news.</li>
       </ul>
 
