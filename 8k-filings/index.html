@@ -36,9 +36,29 @@
       </figure>
       <p class="note">If you read only the main sections of an 8-K, you miss most of what Item 8.01 says. Analysts, investors and anyone building tools on SEC filings should read it too.</p>
 
-      <h4>What the new news is about</h4>
+      <h4>The main kinds of news</h4>
+      <p class="about-text">Claude sorted every Item 8.01 into 27 kinds of news. These eleven cover most of it. A filing can report more than one kind, so the shares add up to more than 100%.</p>
+      <div class="table-wrap">
+        <table class="compare">
+          <thead><tr><th>Kind of news</th><th>Share of filings</th><th>What it usually is</th></tr></thead>
+          <tbody>
+            <tr><td>Borrowing</td><td class="num">14%</td><td>New loans, bonds and credit lines, or paying old debt back early.</td></tr>
+            <tr><td>Dividends</td><td class="num">14%</td><td>Declaring the regular dividend. A few raise it, pay a special one, or cut it.</td></tr>
+            <tr><td>Share sales</td><td class="num">13%</td><td>Selling new stock to raise money, through a public offering or a private deal.</td></tr>
+            <tr><td>Mergers and acquisitions</td><td class="num">10%</td><td>Buying a company, selling part of the business, being bought, or a deal falling through.</td></tr>
+            <tr><td>Drug trials and FDA</td><td class="num">9%</td><td>Clinical trial results and FDA steps, mostly from biotech companies.</td></tr>
+            <tr><td>Business updates</td><td class="num">9%</td><td>New contracts and partnerships, product launches, and in 2025, companies buying crypto.</td></tr>
+            <tr><td>Buybacks</td><td class="num">8%</td><td>The company buying back its own shares, or starting a new buyback program.</td></tr>
+            <tr><td>Leadership changes</td><td class="num">5%</td><td>Executives and board members joining or leaving.</td></tr>
+            <tr><td>Board and governance</td><td class="num">5%</td><td>Shareholder meeting dates, vote results, meetings postponed, and rule changes.</td></tr>
+            <tr><td>Stock splits and share changes</td><td class="num">5%</td><td>Changes to shares that raise no money, most often reverse splits.</td></tr>
+            <tr><td>Stock exchange listing</td><td class="num">5%</td><td>Warnings that a stock could be delisted, and companies fixing the problem.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>What repeats and what doesn't</h4>
       <ul class="points">
-        <li><strong>Money going in and out.</strong> Dividends, borrowing and share sales are the three most common kinds of news, in about 40% of filings.</li>
         <li><strong>Some news shows up only here.</strong> Dividends (96% new), buybacks (93%) and lawsuits (92%) almost never appear in another section. For these, Item 8.01 is the only place to find them.</li>
         <li><strong>The repeats have a pattern.</strong> Leadership changes (43%) and share sales (41%) repeat the most. Usually the same press release is filed twice, or the signed agreement behind a share sale also goes in its own section.</li>
         <li><strong>Drug companies repeat the most.</strong> A third of life sciences filings are repeats, mostly because biotechs often file the same trial results press release in two places.</li>
@@ -49,20 +69,7 @@
       </figure>
 
       <h4>How I did it</h4>
-      <ul class="points">
-        <li><strong>Collected the filings.</strong> Every 8-K with an Item 8.01 from SEC EDGAR, January 2024 to January 2026, for public companies with a stock ticker.</li>
-        <li><strong>Labeled the news.</strong> Claude read each Item 8.01 and tagged it with one or more of 27 kinds of news, a more detailed type within each, and a tone. On 40 test filings, Claude Sonnet got about 98% right against about 90% for Claude Haiku, so I used Sonnet.</li>
-        <li><strong>Checked for repeats.</strong> I downloaded each full filing, split it into its numbered sections, and had Claude compare Item 8.01 with every other section: same news, related news, or different news. That was 15,948 comparisons.</li>
-        <li><strong>Fixed what the check turned up.</strong> In 55 filings the text I had collected was only a pointer like “see Item 8.01 below”, not the section itself. I pulled the real text and labeled it again.</li>
-      </ul>
-
-      <h4>By the numbers</h4>
-      <dl class="numbers">
-        <div><dt>24,091</dt><dd>Item 8.01 sections read</dd></div>
-        <div><dt>27</dt><dd>kinds of news</dd></div>
-        <div><dt>77%</dt><dd>report something new</dd></div>
-        <div><dt>15,948</dt><dd>section comparisons</dd></div>
-      </dl>
+      <p class="about-text">I collected every Item 8.01 from SEC EDGAR, had Claude label the kind of news in each one, then had Claude compare it with the other sections of the same filing.</p>
 
       <h3>What's next</h3>
       <ul class="points">
